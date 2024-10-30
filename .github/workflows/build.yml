@@ -1,0 +1,150 @@
+name: Build and Release Executables
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            python-version: "3.12"
+            icon: "./media/icons/pdf.ico"
+            output-name: pdf_merger.exe
+          - os: macos-latest
+            python-version: "3.12"
+            icon: "./media/icons/pdf.icns"
+            output-name: pdf_merger
+          - os: ubuntu-latest
+            python-version: "3.12"
+            icon: "./media/icons/pdf.ico"
+            output-name: pdf_merger
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build Executable
+        run: |
+          pyinstaller --onefile --windowed --name pdf_merger --icon=${{ matrix.icon }} ./src/app.py
+
+      # Windows-specific steps to create the installer using Inno Setup
+      - name: Install Inno Setup
+        if: matrix.os == 'windows-latest'
+        run: choco install innosetup --no-progress -y
+
+      - name: Create Windows Installer
+        if: matrix.os == 'windows-latest'
+        run: |
+          iscc /q installers/windows_setup.iss
+
+      # Upload artifacts
+      - name: Upload Windows Installer
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows_installer
+          path: installers/Output/setup.exe
+
+      - name: Upload macOS Executable
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos_executable
+          path: dist/${{ matrix.output-name }}
+
+      - name: Upload Linux Executable
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux_executable
+          path: dist/${{ matrix.output-name }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Get version from Inno Setup file
+        id: get-release-version
+        run: |
+          VERSION=$(grep -oP '(?<=#define MyAppVersion ")[^"]*' installers/windows_setup.iss)
+          echo "VERSION=v$VERSION" >> $GITHUB_ENV
+
+      - name: Download Windows Installer
+        uses: actions/download-artifact@v3
+        with:
+          name: windows_installer
+          path: ./artifacts/windows
+
+      - name: Download macOS Executable
+        uses: actions/download-artifact@v3
+        with:
+          name: macos_executable
+          path: ./artifacts/macos
+
+      - name: Download Linux Executable
+        uses: actions/download-artifact@v3
+        with:
+          name: linux_executable
+          path: ./artifacts/linux
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.VERSION }}
+          release_name: PDF Merger ${{ env.VERSION }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Windows Installer
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/windows/setup.exe
+          asset_name: windows_setup.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload macOS Executable
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/macos/pdf_merger
+          asset_name: pdf_merger_mac
+          asset_content_type: application/octet-stream
+
+      - name: Upload Linux Executable
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/linux/pdf_merger
+          asset_name: pdf_merger_linux
+          asset_content_type: application/octet-stream
