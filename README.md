@@ -24,7 +24,7 @@ The PDF Merger App is a simple, local and cross-platform desktop application tha
 
 # 📦 Installation
 
-In the **releases** tab, you will find the executable build for the app. Then you can run them directly.
+In the [**releases**](https://github.com/P-ict0/pdf-merger-app/releases) tab, you will find the executable build for the app. Then you can run them directly.
 
 # 💻 Development
 
