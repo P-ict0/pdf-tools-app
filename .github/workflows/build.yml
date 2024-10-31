@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      - src/
+      - installers/
+      - media/
+      - requirements.txt
 
 permissions:
   contents: write
