@@ -1,8 +1,12 @@
+; Inno Setup Script
+
 #define MyAppName "PDF Merger"
-#define MyAppVersion "1.0.1"
+#ifndef MyAppVersion
+  #define MyAppVersion "1.0.0"
+#endif
 #define MyAppPublisher "P-ict0"
 #define MyAppURL "https://github.com/P-ict0/pdf-merger-app"
-#define MyAppExeName "pdf_merger.exe"
+#define MyAppExeName "pdf_merger_windows.exe"
 
 [Setup]
 AppId={{98AAE78F-AF6E-44B1-99A1-3C5180C9867A}
@@ -16,7 +20,7 @@ CreateAppDir=yes
 DefaultDirName={pf}\{#MyAppName}
 LicenseFile=..\LICENSE
 PrivilegesRequiredOverridesAllowed=dialog
-OutputBaseFilename=setup
+OutputBaseFilename=pdf_merger_setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
