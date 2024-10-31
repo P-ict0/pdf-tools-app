@@ -1,9 +1,23 @@
 import os
+import sys
 import platform
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from PyPDF2 import PdfMerger
 import subprocess
+
+
+def get_version():
+    try:
+        base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+        version_path = os.path.join(base_path, "..", "VERSION")
+        with open(version_path, "r") as f:
+            return f.read().strip()
+    except Exception:
+        return "Unknown"
+
+
+__version__ = get_version()
 
 
 def merge_pdfs(file_paths, output_path):
@@ -15,6 +29,7 @@ def merge_pdfs(file_paths, output_path):
 
 
 def main():
+    print(f"PDF Merger version {__version__}")
     root = tk.Tk()
     root.title("PDF Merger")
     root.geometry("900x600")

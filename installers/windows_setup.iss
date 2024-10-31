@@ -1,5 +1,7 @@
+; Inno Setup Script
+
 #define MyAppName "PDF Merger"
-#define MyAppVersion "1.0.1"
+#define MyAppVersion "{#Version}"
 #define MyAppPublisher "P-ict0"
 #define MyAppURL "https://github.com/P-ict0/pdf-merger-app"
 #define MyAppExeName "pdf_merger.exe"
