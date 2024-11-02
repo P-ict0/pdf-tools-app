@@ -20,6 +20,7 @@ CreateAppDir=yes
 DefaultDirName={pf}\{#MyAppName}
 DefaultUserDirName={userappdata}\{#MyAppName} ; Default for single-user install
 LicenseFile=..\LICENSE
+PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=dialog
 OutputBaseFilename=pdf_merger_windows
 Compression=lzma
