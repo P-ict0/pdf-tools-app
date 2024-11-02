@@ -18,6 +18,7 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 CreateAppDir=yes
 DefaultDirName={pf}\{#MyAppName}
+DefaultUserDirName={userappdata}\{#MyAppName} ; Default for single-user install
 LicenseFile=..\LICENSE
 PrivilegesRequiredOverridesAllowed=dialog
 OutputBaseFilename=pdf_merger_windows
