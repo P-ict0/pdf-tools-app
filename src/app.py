@@ -1,6 +1,7 @@
 import os
 import sys
 import platform
+import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from PyPDF2 import PdfMerger
@@ -58,6 +59,7 @@ def main():
 
     selected_files = []
     output_file = ""
+    is_animating = False  # For loading animation control
 
     def select_file():
         files = filedialog.askopenfilenames(
@@ -71,8 +73,16 @@ def main():
 
     def update_file_list():
         file_list.delete(0, tk.END)
+        total_size = 0
         for idx, file in enumerate(selected_files):
-            file_list.insert(tk.END, f"{idx + 1}. {os.path.basename(file)}")
+            size = os.path.getsize(file)
+            total_size += size
+            size_mb = size / (1024 * 1024)
+            file_list.insert(
+                tk.END, f"{idx + 1}. {os.path.basename(file)} ({size_mb:.2f} MB)"
+            )
+        total_size_mb = total_size / (1024 * 1024)
+        total_size_label.config(text=f"Total size: {total_size_mb:.2f} MB")
 
     def select_output_file():
         nonlocal output_file
@@ -97,26 +107,42 @@ def main():
         merge_btn.config(state="disabled")
         start_loading_animation()
 
-        # Perform merging after a short delay to allow animation to start
-        root.after(100, perform_merge)
+        # Perform merging in a separate thread
+        merge_thread = threading.Thread(target=perform_merge)
+        merge_thread.start()
 
     def perform_merge():
         try:
             merge_pdfs(selected_files, output_file)
-            messagebox.showinfo(
-                "Success", f"PDFs have been merged into:\n{output_file}"
-            )
-            ask_to_open_or_close()
+            merged_size = os.path.getsize(output_file)
+            merged_size_mb = merged_size / (1024 * 1024)
+            # Schedule the messagebox and other GUI updates in the main thread
+            root.after(0, merge_completed, merged_size_mb)
         except Exception as e:
-            messagebox.showerror("Error", f"An error occurred:\n{e}")
-        finally:
-            stop_loading_animation()
+            # Schedule the error message in the main thread
+            root.after(0, merge_failed, e)
+
+    def merge_completed(merged_size_mb):
+        messagebox.showinfo(
+            "Success",
+            f"PDFs have been merged into:\n{output_file}\nTotal size: {merged_size_mb:.2f} MB",
+        )
+        stop_loading_animation()
+        ask_to_open_or_close()
+
+    def merge_failed(e):
+        messagebox.showerror("Error", f"An error occurred:\n{e}")
+        stop_loading_animation()
 
     def start_loading_animation():
+        nonlocal is_animating
+        is_animating = True
         merge_btn_text.set("Merging.")
         animate_loading()
 
     def animate_loading():
+        if not is_animating:
+            return
         current_text = merge_btn_text.get()
         if current_text.endswith("..."):
             merge_btn_text.set("Merging.")
@@ -125,6 +151,8 @@ def main():
         root.after(500, animate_loading)  # Repeat animation every 500 ms
 
     def stop_loading_animation():
+        nonlocal is_animating
+        is_animating = False
         merge_btn_text.set("Merge PDFs")
         merge_btn.config(state="normal")
 
@@ -135,7 +163,7 @@ def main():
         )
         if response == "yes":
             open_file(output_file)
-        root.quit()  # Close the application
+        # Do not quit the application here; allow the user to continue using it if needed
 
     def open_file(filepath):
         if platform.system() == "Windows":
@@ -219,6 +247,10 @@ def main():
     )
     file_list.grid(row=3, column=0, columnspan=2, padx=5, pady=5, sticky="nsew")
 
+    # Total size label
+    total_size_label = ttk.Label(frame, text="Total size: 0.00 MB")
+    total_size_label.grid(row=4, column=0, columnspan=2, sticky="w", pady=5)
+
     # Move Up and Move Down buttons
     move_up_btn = ttk.Button(frame, text="Move ↑", command=move_up, width=20)
     move_up_btn.grid(row=3, column=2, padx=5, pady=(5, 0), sticky="n")
@@ -228,14 +260,14 @@ def main():
 
     # Delete PDF button
     delete_btn = ttk.Button(
-        frame, text="Delete pdf", command=delete_selected_file, width=20
+        frame, text="Delete PDF", command=delete_selected_file, width=20
     )
     delete_btn.grid(row=3, column=2, padx=5, pady=(100, 5), sticky="n")
 
     # Merge PDFs button with animation
     merge_btn_text = tk.StringVar(value="Merge PDFs")
     merge_btn = ttk.Button(frame, textvariable=merge_btn_text, command=merge, width=20)
-    merge_btn.grid(row=4, column=0, columnspan=2, pady=10)
+    merge_btn.grid(row=5, column=0, columnspan=2, pady=10)
 
     root.mainloop()
 
