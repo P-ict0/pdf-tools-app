@@ -5,6 +5,7 @@
 - [📖 Description](#-description)
 - [✨ Features](#-features)
 - [📦 Installation](#-installation)
+- [⚙️ Run from source](#️-run-from-source)
 - [💻 Development](#-development)
 - [👥 Contributing](#-contributing)
 
@@ -24,7 +25,31 @@ The PDF Merger App is a simple, local and cross-platform desktop application tha
 
 # 📦 Installation
 
-In the [**releases**](https://github.com/P-ict0/pdf-merger-app/releases) tab, you will find the executable build for the app. Then you can run them directly.
+In the [**releases**](https://github.com/P-ict0/pdf-merger-app/releases) tab, you will find the executable for the app. Then you can run them directly.
+
+If you prefer to run from source, continue reading.
+
+# ⚙️ Run from source
+
+If you want to run from source:
+
+```bash
+# Clone
+git clone https://github.com/P-ict0/pdf-merger-app.git
+cd pdf-merger-app
+
+# (recommended) Set up a virtual environment
+python3 -m venv ./venv
+# Activate
+source ./venv/bin/activate # For linux (Different for Windows and Mac)
+
+# Requirements and run
+pip install --upgrade pip
+pip install -r requirements.txt
+python src/app.py
+```
+
+To build the app into an executable, you can use Pyinstaller
 
 # 💻 Development
 
