@@ -104,7 +104,7 @@ def main():
             return
 
         # Disable button and start loading animation
-        merge_btn.config(state="disabled")
+        merge_btn.config(state="disabled", bg="#E06C75")
         start_loading_animation()
 
         # Perform merging in a separate thread
@@ -154,7 +154,7 @@ def main():
         nonlocal is_animating
         is_animating = False
         merge_btn_text.set("Merge PDFs")
-        merge_btn.config(state="normal")
+        merge_btn.config(state="normal", bg="#98C379")
 
     def ask_to_open_or_close():
         response = messagebox.askquestion(
@@ -264,10 +264,33 @@ def main():
     )
     delete_btn.grid(row=3, column=2, padx=5, pady=(100, 5), sticky="n")
 
-    # Merge PDFs button with animation
+    # Merge PDFs button with larger font and color change on click
     merge_btn_text = tk.StringVar(value="Merge PDFs")
-    merge_btn = ttk.Button(frame, textvariable=merge_btn_text, command=merge, width=20)
+    merge_btn = tk.Button(
+        frame,
+        textvariable=merge_btn_text,
+        command=merge,
+        width=20,
+        font=("Helvetica", 16, "bold"),
+        bg="#98C379",
+        activebackground="#61AFEF",
+        fg="black",
+        bd=0,
+        highlightthickness=0,
+        padx=10,
+        pady=10,
+    )
     merge_btn.grid(row=5, column=0, columnspan=2, pady=10)
+
+    # Bind events to change color when clicked
+    def on_merge_btn_press(event):
+        merge_btn.config(bg="#E06C75")
+
+    def on_merge_btn_release(event):
+        merge_btn.config(bg="#98C379")
+
+    merge_btn.bind("<ButtonPress>", on_merge_btn_press)
+    merge_btn.bind("<ButtonRelease>", on_merge_btn_release)
 
     root.mainloop()
 
