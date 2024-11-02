@@ -104,7 +104,7 @@ def main():
             return
 
         # Disable button and start loading animation
-        merge_btn.config(state="disabled", bg="#E06C75")
+        merge_btn.config(state="disabled", bg="#4C8B4A")
         start_loading_animation()
 
         # Perform merging in a separate thread
@@ -284,7 +284,7 @@ def main():
 
     # Bind events to change color when clicked
     def on_merge_btn_press(event):
-        merge_btn.config(bg="#E06C75")
+        merge_btn.config(bg="#4C8B4A")
 
     def on_merge_btn_release(event):
         merge_btn.config(bg="#98C379")
