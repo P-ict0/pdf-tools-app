@@ -1,52 +1,10 @@
 import os
-import sys
 import platform
-import requests
 import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from PyPDF2 import PdfMerger
 import subprocess
-import webbrowser
-
-
-def get_version():
-    try:
-        base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
-        # Adjust the path to go one directory up
-        version_path = os.path.join(base_path, "..", "VERSION")
-        if not os.path.exists(version_path):
-            # If not found, look in the base_path (for PyInstaller bundled app)
-            version_path = os.path.join(base_path, "VERSION")
-        with open(version_path, "r") as f:
-            return f.read().strip()
-    except Exception:
-        return "Unknown"
-
-
-def check_for_updates():
-    try:
-        response = requests.get(
-            "https://raw.githubusercontent.com/P-ict0/pdf-merger-app/refs/heads/main/VERSION"
-        )
-        latest_version = response.text.strip()
-
-        if latest_version > __version__:
-            prompt_update(latest_version)
-        else:
-            print("You are using the latest version.")
-
-    except Exception as e:
-        pass  # Silently ignore any errors
-
-
-def prompt_update(latest_version):
-    if messagebox.askyesno(
-        "Update Available",
-        f"A new version of PDF merger ({latest_version}) is available. Do you want to download it?",
-    ):
-        webbrowser.open("https://github.com/P-ict0/pdf-merger-app/releases/latest")
-        sys.exit(0)
 
 
 def merge_pdfs(file_paths, output_path):
@@ -57,7 +15,7 @@ def merge_pdfs(file_paths, output_path):
     merger.close()
 
 
-def main():
+def pdf_merger_main():
     root = tk.Tk()
     root.title("PDF Merger")
     root.geometry("900x600")
@@ -319,7 +277,4 @@ def main():
 
 
 if __name__ == "__main__":
-    __version__ = get_version()
-    print(f"PDF Merger version {__version__}")
-    check_for_updates()
-    main()
+    pdf_merger_main()
