@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from PyPDF2 import PdfMerger
 import subprocess
+import sys  # Import sys to exit the application
 
 
 def merge_pdfs(file_paths, output_path):
@@ -297,6 +298,15 @@ def pdf_merger_main(root_window=None):
         width=20,
     )
     merge_btn.grid(row=6, column=0, columnspan=2, pady=10)
+
+    # Handle the close event of the merger window
+    def on_merger_window_close():
+        merger_window.destroy()
+        if root_window:
+            root_window.destroy()
+        sys.exit(0)  # Exit the application
+
+    merger_window.protocol("WM_DELETE_WINDOW", on_merger_window_close)
 
     merger_window.mainloop()
 

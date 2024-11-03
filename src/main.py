@@ -85,7 +85,6 @@ def main():
     def open_pdf_merger():
         # Hide the main window
         root.withdraw()
-        # Import the PDF Merger tool here for performance
         from tools.pdf_merger import pdf_merger_main
 
         pdf_merger_main(root)  # Pass the root window
@@ -94,6 +93,13 @@ def main():
     merger_button.pack(pady=10)
 
     # More tools to come...
+
+    # Handle the close event of the root window
+    def on_root_close():
+        root.destroy()
+        sys.exit(0)  # Exit the application
+
+    root.protocol("WM_DELETE_WINDOW", on_root_close)
 
     root.mainloop()
 
