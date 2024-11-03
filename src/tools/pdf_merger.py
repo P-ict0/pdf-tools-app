@@ -43,12 +43,22 @@ def pdf_merger_main(root_window=None):
     merger_window.configure(bg=bg_color)
     style.configure("TFrame", background=bg_color)
     style.configure(
-        "TButton", background=button_bg, foreground=button_fg, font=("Helvetica", 12)
-    )
-    style.configure(
-        "TLabel", background=bg_color, foreground=fg_color, font=("Helvetica", 12)
+        "TButton",
+        background=button_bg,
+        foreground=button_fg,
+        font=("Helvetica", 12),
+        borderwidth=0,
+        focusthickness=0,
+        focuscolor=bg_color,
     )
     style.map("TButton", background=[("active", active_bg)])
+
+    style.configure(
+        "TLabel",
+        background=bg_color,
+        foreground=fg_color,
+        font=("Helvetica", 12),
+    )
 
     selected_files = []
     output_file = ""
@@ -271,21 +281,6 @@ def pdf_merger_main(root_window=None):
         width=20,
     )
     merge_btn.grid(row=6, column=0, columnspan=2, pady=10)
-
-    # Bind events to change color when clicked
-    def on_merge_btn_press(event):
-        merge_btn.state(["pressed"])
-        merge_btn.configure(style="Pressed.TButton")
-
-    def on_merge_btn_release(event):
-        merge_btn.state(["!pressed"])
-        merge_btn.configure(style="TButton")
-
-    merge_btn.bind("<ButtonPress>", on_merge_btn_press)
-    merge_btn.bind("<ButtonRelease>", on_merge_btn_release)
-
-    # Create styles for pressed button
-    style.configure("Pressed.TButton", background=active_bg)
 
     merger_window.mainloop()
 
