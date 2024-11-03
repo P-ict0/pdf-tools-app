@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyInstaller build folders
+/build/
+dist/
+*.spec
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Virtual environment
+venv/
+env/
+
+# Python package files
+*.egg-info/
+
+# TkinterDND cache
+tkinterdnd2/
+

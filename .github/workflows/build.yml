@@ -1,0 +1,187 @@
+name: Build and Release Executables
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - VERSION
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            python-version: "3.12"
+            icon: "./media/icons/pdf.ico"
+            output-name: pdf_merger_windows.exe
+            pyinstaller-options: "--onefile --windowed"
+          - os: macos-latest
+            python-version: "3.12"
+            icon: "./media/icons/pdf.icns"
+            output-name: pdf_merger_macos
+            pyinstaller-options: "--windowed"
+          - os: ubuntu-latest
+            python-version: "3.12"
+            icon: "./media/icons/pdf.ico"
+            output-name: pdf_merger_linux
+            pyinstaller-options: "--onefile --windowed"
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Read Version
+        shell: bash
+        run: |
+          VERSION=$(cat VERSION)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build Executable
+        run: |
+          pyinstaller ${{ matrix.pyinstaller-options }} --name "${{ matrix.output-name }}" --icon=${{ matrix.icon }} --add-data "VERSION:." ./src/app.py
+
+      - name: List dist Directory (Debugging)
+        shell: bash
+        run: ls -la dist/
+
+      # Windows-specific steps
+      - name: Install Inno Setup
+        if: matrix.os == 'windows-latest'
+        run: choco install innosetup --no-progress -y
+
+      - name: Create Windows Installer
+        if: matrix.os == 'windows-latest'
+        run: |
+          iscc installers/windows_setup.iss /DMyAppVersion=${{ env.VERSION }}
+
+      # macOS-specific steps
+      - name: Install create-dmg
+        if: matrix.os == 'macos-latest'
+        run: brew install create-dmg
+
+      - name: Build macOS Installer
+        if: matrix.os == 'macos-latest'
+        run: |
+          mkdir -p dist/AppBundle
+          cp -R dist/"${{ matrix.output-name }}".app dist/AppBundle/
+          create-dmg \
+            --volname "PDF Merger Installer" \
+            --volicon "${{ matrix.icon }}" \
+            --window-pos 200 120 \
+            --window-size 800 400 \
+            --icon-size 100 \
+            --app-drop-link 600 185 \
+            --icon "${{ matrix.output-name }}.app" 200 190 \
+            "dist/pdf_merger_macos.dmg" \
+            dist/AppBundle
+
+      # Upload artifacts
+      - name: Upload Windows Installer
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows_installer
+          path: installers/Output/pdf_merger_windows.exe
+
+      - name: Upload macOS Installer
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos_installer
+          path: dist/pdf_merger_macos.dmg
+
+      - name: Upload Linux Executable
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux_executable
+          path: dist/pdf_merger_linux
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Get version
+        id: get-release-version
+        shell: bash
+        run: |
+          VERSION=$(cat VERSION)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Download Windows Installer
+        uses: actions/download-artifact@v3
+        with:
+          name: windows_installer
+          path: ./artifacts/windows
+
+      - name: Download macOS Installer
+        uses: actions/download-artifact@v3
+        with:
+          name: macos_installer
+          path: ./artifacts/macos
+
+      - name: Download Linux Executable
+        uses: actions/download-artifact@v3
+        with:
+          name: linux_executable
+          path: ./artifacts/linux
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "v${{ env.VERSION }}"
+          release_name: "PDF Merger v${{ env.VERSION }}"
+          draft: false
+          prerelease: false
+
+      - name: Upload Windows Installer
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/windows/pdf_merger_windows.exe
+          asset_name: pdf_merger_windows.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload macOS Installer
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/macos/pdf_merger_macos.dmg
+          asset_name: pdf_merger_macos.dmg
+          asset_content_type: application/x-apple-diskimage
+
+      - name: Upload Linux Executable
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/linux/pdf_merger_linux
+          asset_name: pdf_merger_linux
+          asset_content_type: application/octet-stream
