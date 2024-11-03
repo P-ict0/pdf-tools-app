@@ -15,33 +15,46 @@ def merge_pdfs(file_paths, output_path):
     merger.close()
 
 
-def pdf_merger_main():
-    root = tk.Tk()
-    root.title("PDF Merger")
-    root.geometry("900x600")
-    root.resizable(True, True)
+def pdf_merger_main(root_window=None):
+    def go_back():
+        # Close the current window and show the main window
+        merger_window.destroy()
+        if root_window:
+            root_window.deiconify()
 
-    # Set up ttk style with custom theme colors
+    # Create a new window for the PDF Merger
+    merger_window = tk.Toplevel()
+    merger_window.title("PDF Merger")
+    merger_window.geometry("900x600")
+    merger_window.resizable(True, True)
+
+    # Set up modern style
     style = ttk.Style()
     style.theme_use("clam")
 
-    # Colors
-    root.configure(bg="#282C34")
-    style.configure("TFrame", background="#282C34")
-    style.configure("TButton", font=("Helvetica", 10, "bold"), padding=5)
+    # Colors (Nord Theme)
+    bg_color = "#2E3440"
+    fg_color = "#D8DEE9"
+    button_bg = "#4C566A"
+    button_fg = "#ECEFF4"
+    highlight_color = "#88C0D0"
+    active_bg = "#5E81AC"
+
+    merger_window.configure(bg=bg_color)
+    style.configure("TFrame", background=bg_color)
     style.configure(
-        "TLabel", background="#282C34", foreground="white", font=("Helvetica", 10)
+        "TButton", background=button_bg, foreground=button_fg, font=("Helvetica", 12)
     )
-    style.map(
-        "TButton",
-        background=[("active", "#61AFEF"), ("!active", "#98C379")],
-        foreground=[("!disabled", "black")],
+    style.configure(
+        "TLabel", background=bg_color, foreground=fg_color, font=("Helvetica", 12)
     )
+    style.map("TButton", background=[("active", active_bg)])
 
     selected_files = []
     output_file = ""
     is_animating = False  # For loading animation control
 
+    # Functions
     def select_file():
         files = filedialog.askopenfilenames(
             title="Select PDF Files",
@@ -85,7 +98,7 @@ def pdf_merger_main():
             return
 
         # Disable button and start loading animation
-        merge_btn.config(state="disabled", bg="#4C8B4A")
+        merge_btn.config(state="disabled")
         start_loading_animation()
 
         # Perform merging in a separate thread
@@ -98,10 +111,10 @@ def pdf_merger_main():
             merged_size = os.path.getsize(output_file)
             merged_size_mb = merged_size / (1024 * 1024)
             # Schedule the messagebox and other GUI updates in the main thread
-            root.after(0, merge_completed, merged_size_mb)
+            merger_window.after(0, merge_completed, merged_size_mb)
         except Exception as e:
             # Schedule the error message in the main thread
-            root.after(0, merge_failed, e)
+            merger_window.after(0, merge_failed, e)
 
     def merge_completed(merged_size_mb):
         messagebox.showinfo(
@@ -129,17 +142,17 @@ def pdf_merger_main():
             merge_btn_text.set("Merging.")
         else:
             merge_btn_text.set(current_text + ".")
-        root.after(500, animate_loading)  # Repeat animation every 500 ms
+        merger_window.after(500, animate_loading)  # Repeat animation every 500 ms
 
     def stop_loading_animation():
         nonlocal is_animating
         is_animating = False
         merge_btn_text.set("Merge PDFs")
-        merge_btn.config(state="normal", bg="#98C379")
+        merge_btn.config(state="normal")
 
     def ask_to_open_or_close():
         response = messagebox.askquestion(
-            "Open or Close",
+            "Open Merged PDF",
             "Do you want to open the merged PDF file?",
         )
         if response == "yes":
@@ -190,90 +203,91 @@ def pdf_merger_main():
         update_file_list()  # Refresh Listbox
 
     # GUI Layout
-    frame = ttk.Frame(root, padding=10)
+    frame = ttk.Frame(merger_window, padding=10)
     frame.pack(expand=True, fill=tk.BOTH)
+
+    # Add a Back button to return to the main menu
+    back_btn = ttk.Button(frame, text="← Back", command=go_back)
+    back_btn.grid(row=0, column=0, sticky="w", pady=5)
 
     # Make rows and columns in the frame resizable
     frame.columnconfigure(1, weight=1)
-    frame.rowconfigure(3, weight=1)
+    frame.rowconfigure(4, weight=1)
 
     # Add PDF button
     file_btn = ttk.Button(frame, text="Add PDFs", command=select_file, width=20)
-    file_btn.grid(row=0, column=0, pady=5, sticky="w")
+    file_btn.grid(row=1, column=0, pady=5, sticky="w")
 
     # Select Output button
     output_btn = ttk.Button(
         frame, text="Select Output File", command=select_output_file, width=20
     )
-    output_btn.grid(row=1, column=0, pady=5, sticky="w")
+    output_btn.grid(row=2, column=0, pady=5, sticky="w")
 
     # Output path label
     output_label = ttk.Label(frame, text="No output file selected")
-    output_label.grid(row=1, column=1, padx=5, sticky="w")
+    output_label.grid(row=2, column=1, padx=5, sticky="w")
 
     # Selected PDFs label
     file_list_label = ttk.Label(frame, text="Selected PDFs:")
-    file_list_label.grid(row=2, column=0, columnspan=2, sticky="w", pady=5)
+    file_list_label.grid(row=3, column=0, columnspan=2, sticky="w", pady=5)
 
     # Listbox with updated colors
     file_list = tk.Listbox(
         frame,
         selectmode=tk.SINGLE,
-        bg="#3E4451",
-        fg="white",
+        bg=button_bg,
+        fg=fg_color,
         font=("Helvetica", 12),
-        highlightbackground="#98C379",
-        selectbackground="#61AFEF",
-        selectforeground="black",
+        highlightbackground=highlight_color,
+        selectbackground=highlight_color,
+        selectforeground=bg_color,
     )
-    file_list.grid(row=3, column=0, columnspan=2, padx=5, pady=5, sticky="nsew")
+    file_list.grid(row=4, column=0, columnspan=2, padx=5, pady=5, sticky="nsew")
 
     # Total size label
     total_size_label = ttk.Label(frame, text="Total size: 0.00 MB")
-    total_size_label.grid(row=4, column=0, columnspan=2, sticky="w", pady=5)
+    total_size_label.grid(row=5, column=0, columnspan=2, sticky="w", pady=5)
 
     # Move Up and Move Down buttons
     move_up_btn = ttk.Button(frame, text="Move ↑", command=move_up, width=20)
-    move_up_btn.grid(row=3, column=2, padx=5, pady=(5, 0), sticky="n")
+    move_up_btn.grid(row=4, column=2, padx=5, pady=(5, 0), sticky="n")
 
     move_down_btn = ttk.Button(frame, text="Move ↓", command=move_down, width=20)
-    move_down_btn.grid(row=3, column=2, padx=5, pady=(50, 5), sticky="n")
+    move_down_btn.grid(row=4, column=2, padx=5, pady=(50, 5), sticky="n")
 
     # Delete PDF button
     delete_btn = ttk.Button(
         frame, text="Delete PDF", command=delete_selected_file, width=20
     )
-    delete_btn.grid(row=3, column=2, padx=5, pady=(100, 5), sticky="n")
+    delete_btn.grid(row=4, column=2, padx=5, pady=(100, 5), sticky="n")
 
-    # Merge PDFs button with larger font and color change on click
+    # Merge PDFs button
     merge_btn_text = tk.StringVar(value="Merge PDFs")
-    merge_btn = tk.Button(
+    merge_btn = ttk.Button(
         frame,
         textvariable=merge_btn_text,
         command=merge,
         width=20,
-        font=("Helvetica", 16, "bold"),
-        bg="#98C379",
-        activebackground="#61AFEF",
-        fg="black",
-        bd=0,
-        highlightthickness=0,
-        padx=10,
-        pady=10,
     )
-    merge_btn.grid(row=5, column=0, columnspan=2, pady=10)
+    merge_btn.grid(row=6, column=0, columnspan=2, pady=10)
 
     # Bind events to change color when clicked
     def on_merge_btn_press(event):
-        merge_btn.config(bg="#4C8B4A")
+        merge_btn.state(["pressed"])
+        merge_btn.configure(style="Pressed.TButton")
 
     def on_merge_btn_release(event):
-        merge_btn.config(bg="#98C379")
+        merge_btn.state(["!pressed"])
+        merge_btn.configure(style="TButton")
 
     merge_btn.bind("<ButtonPress>", on_merge_btn_press)
     merge_btn.bind("<ButtonRelease>", on_merge_btn_release)
 
-    root.mainloop()
+    # Create styles for pressed button
+    style.configure("Pressed.TButton", background=active_bg)
+
+    merger_window.mainloop()
 
 
 if __name__ == "__main__":

@@ -47,29 +47,52 @@ def main():
     print(f"PDF Tools version {__version__}")
     check_for_updates(__version__)
 
+    # Create the main window
     root = tk.Tk()
     root.title("PDF Tools")
-    root.geometry("400x300")
-    root.resizable(True, True)
+    root.geometry("600x400")
+    root.resizable(False, False)
+
+    # Set up modern style
+    style = ttk.Style()
+    style.theme_use("clam")
+
+    # Custom style configurations
+    style.configure("TFrame", background="#2E3440")
+    style.configure(
+        "TLabel",
+        background="#2E3440",
+        foreground="#D8DEE9",
+        font=("Helvetica", 16, "bold"),
+    )
+    style.configure(
+        "TButton",
+        background="#4C566A",
+        foreground="#ECEFF4",
+        font=("Helvetica", 14, "bold"),
+    )
+    style.map("TButton", background=[("active", "#5E81AC")])
 
     # Create a frame
-    frame = ttk.Frame(root, padding=10)
+    frame = ttk.Frame(root, padding=20)
     frame.pack(expand=True, fill=tk.BOTH)
 
-    # Label
-    label = ttk.Label(frame, text="Select a PDF tool:")
-    label.pack(pady=10)
+    # Title Label
+    label = ttk.Label(frame, text="Select a PDF Tool:")
+    label.pack(pady=20)
 
     # Buttons for each tool
-    # For now, only PDF Merger
     def open_pdf_merger():
-        root.destroy()  # Close the main window
+        # Hide the main window
+        root.withdraw()
         from tools.pdf_merger import pdf_merger_main
 
-        pdf_merger_main()
+        pdf_merger_main(root)  # Pass the root window
 
     merger_button = ttk.Button(frame, text="PDF Merger", command=open_pdf_merger)
-    merger_button.pack(pady=5)
+    merger_button.pack(pady=10)
+
+    # More tools to come...
 
     root.mainloop()
 
