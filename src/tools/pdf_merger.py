@@ -5,7 +5,10 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from PyPDF2 import PdfMerger
 import subprocess
-import sys  # Import sys to exit the application
+import sys
+
+from config import APP_NAME, APP_VERSION, get_version
+import styles
 
 
 def merge_pdfs(file_paths, output_path):
@@ -16,9 +19,8 @@ def merge_pdfs(file_paths, output_path):
     merger.close()
 
 
-def pdf_merger_main(root_window=None):
+def main(root_window=None):
     def go_back():
-        # Close the current window and show the main window
         merger_window.destroy()
         if root_window:
             root_window.deiconify()
@@ -29,41 +31,16 @@ def pdf_merger_main(root_window=None):
     merger_window.geometry("900x600")
     merger_window.resizable(True, True)
 
-    # Set up modern style
+    # Set up styles
     style = ttk.Style()
-    style.theme_use("clam")
+    styles.set_theme(style)
 
-    # Colors (Nord Theme)
-    bg_color = "#2E3440"
-    fg_color = "#D8DEE9"
-    button_bg = "#4C566A"
-    button_fg = "#ECEFF4"
-    highlight_color = "#88C0D0"
-    active_bg = "#5E81AC"
+    merger_window.configure(bg=styles.BG_COLOR)
 
-    merger_window.configure(bg=bg_color)
-    style.configure("TFrame", background=bg_color)
-    style.configure(
-        "TButton",
-        background=button_bg,
-        foreground=button_fg,
-        font=("Helvetica", 12),
-        borderwidth=0,
-        focusthickness=0,
-        focuscolor=bg_color,
-    )
-    style.map("TButton", background=[("active", active_bg)])
-
-    style.configure(
-        "TLabel",
-        background=bg_color,
-        foreground=fg_color,
-        font=("Helvetica", 12),
-    )
-
+    # Variables
     selected_files = []
     output_file = ""
-    is_animating = False  # For loading animation control
+    is_animating = False
 
     # Functions
     def select_file():
@@ -227,7 +204,7 @@ def pdf_merger_main(root_window=None):
     frame = ttk.Frame(merger_window, padding=10)
     frame.pack(expand=True, fill=tk.BOTH)
 
-    # Add a Back button to return to the main menu
+    # Back Button
     back_btn = ttk.Button(frame, text="← Back", command=go_back)
     back_btn.grid(row=0, column=0, sticky="w", pady=5)
 
@@ -257,12 +234,12 @@ def pdf_merger_main(root_window=None):
     file_list = tk.Listbox(
         frame,
         selectmode=tk.SINGLE,
-        bg=button_bg,
-        fg=fg_color,
+        bg=styles.BG_COLOR,
+        fg=styles.FG_COLOR,
         font=("Helvetica", 12),
-        highlightbackground=highlight_color,
-        selectbackground=highlight_color,
-        selectforeground=bg_color,
+        highlightbackground=styles.HIGHLIGHT_COLOR,
+        selectbackground=styles.HIGHLIGHT_COLOR,
+        selectforeground=styles.BG_COLOR,
     )
     file_list.grid(row=4, column=0, columnspan=2, padx=5, pady=5, sticky="nsew")
 
@@ -289,22 +266,23 @@ def pdf_merger_main(root_window=None):
     )
     delete_all_btn.grid(row=4, column=2, padx=5, pady=(170, 5), sticky="n")
 
-    # Merge PDFs button
+    # Merge PDFs Button with updated styling
     merge_btn_text = tk.StringVar(value="Merge PDFs")
     merge_btn = ttk.Button(
         frame,
         textvariable=merge_btn_text,
         command=merge,
-        width=20,
+        width=25,
+        style="Large.TButton",  # Use the large button style
     )
-    merge_btn.grid(row=6, column=0, columnspan=2, pady=10)
+    merge_btn.grid(row=6, column=0, columnspan=3, pady=20)
 
-    # Handle the close event of the merger window
+    # Handle the close event
     def on_merger_window_close():
         merger_window.destroy()
         if root_window:
             root_window.destroy()
-        sys.exit(0)  # Exit the application
+        sys.exit(0)
 
     merger_window.protocol("WM_DELETE_WINDOW", on_merger_window_close)
 
@@ -312,4 +290,4 @@ def pdf_merger_main(root_window=None):
 
 
 if __name__ == "__main__":
-    pdf_merger_main()
+    main()

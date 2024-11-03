@@ -1,3 +1,5 @@
+# src/main.py
+
 import tkinter as tk
 from tkinter import ttk
 import sys
@@ -6,15 +8,15 @@ import requests
 from tkinter import messagebox
 import os
 
-
-def get_version():
-    try:
-        base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
-        version_path = os.path.join(base_path, "..", "VERSION")
-        with open(version_path, "r") as f:
-            return f.read().strip()
-    except Exception:
-        return "Unknown"
+from config import (
+    APP_NAME,
+    APP_VERSION,
+    APP_AUTHOR,
+    APP_URL,
+    AUTHOR_GITHUB,
+    get_version,
+)
+import styles
 
 
 def check_for_updates(__version__):
@@ -38,66 +40,87 @@ def prompt_update(latest_version):
         "Update Available",
         f"A new version ({latest_version}) is available. Do you want to download it?",
     ):
-        webbrowser.open("https://github.com/P-ict0/pdf-merger-app/releases/latest")
+        webbrowser.open(f"{APP_URL}/releases/latest")
         sys.exit(0)
 
 
 def main():
     __version__ = get_version()
-    print(f"PDF Tools version {__version__}")
+    print(f"{APP_NAME} version {__version__}")
     check_for_updates(__version__)
 
     # Create the main window
     root = tk.Tk()
-    root.title("PDF Tools")
+    root.title(APP_NAME)
     root.geometry("600x400")
     root.resizable(False, False)
 
-    # Set up modern style
+    # Set up styles
     style = ttk.Style()
-    style.theme_use("clam")
-
-    # Custom style configurations
-    style.configure("TFrame", background="#2E3440")
-    style.configure(
-        "TLabel",
-        background="#2E3440",
-        foreground="#D8DEE9",
-        font=("Helvetica", 16, "bold"),
-    )
-    style.configure(
-        "TButton",
-        background="#4C566A",
-        foreground="#ECEFF4",
-        font=("Helvetica", 14, "bold"),
-    )
-    style.map("TButton", background=[("active", "#5E81AC")])
+    styles.set_theme(style)
 
     # Create a frame
     frame = ttk.Frame(root, padding=20)
     frame.pack(expand=True, fill=tk.BOTH)
 
     # Title Label
-    label = ttk.Label(frame, text="Select a PDF Tool:")
+    label = ttk.Label(frame, text="Select a PDF Tool:", font=styles.FONT_LARGE_BOLD)
     label.pack(pady=20)
 
-    # Buttons for each tool
-    def open_pdf_merger():
-        # Hide the main window
+    # Available tools
+    tools = {
+        "PDF Merger": "pdf_merger",
+        # Add more tools here
+    }
+
+    # Function to open selected tool
+    def open_tool(tool_module_name):
         root.withdraw()
-        from tools.pdf_merger import pdf_merger_main
+        tool_module = __import__(f"tools.{tool_module_name}", fromlist=[""])
+        tool_module.main(root)
 
-        pdf_merger_main(root)  # Pass the root window
+    # Function to dynamically create tool buttons
+    def create_tool_buttons():
+        tool_frame = ttk.Frame(frame)
+        tool_frame.pack(pady=10)
 
-    merger_button = ttk.Button(frame, text="PDF Merger", command=open_pdf_merger)
-    merger_button.pack(pady=10)
+        max_cols = 3
+        row = 0
+        col = 0
 
-    # More tools to come...
+        for tool_name, module_name in tools.items():
+            btn = ttk.Button(
+                tool_frame,
+                text=tool_name,
+                command=lambda m=module_name: open_tool(m),
+                width=20,
+            )
+            btn.grid(row=row, column=col, padx=10, pady=10)
+            col += 1
+            if col >= max_cols:
+                col = 0
+                row += 1
 
-    # Handle the close event of the root window
+    create_tool_buttons()
+
+    # Credits at the bottom
+    def open_author_github(event):
+        webbrowser.open(AUTHOR_GITHUB)
+
+    credits_label = ttk.Label(
+        frame,
+        text=f"Created by {APP_AUTHOR}",
+        foreground=styles.HIGHLIGHT_COLOR,
+        cursor="hand2",
+        font=styles.FONT_DEFAULT,
+    )
+    credits_label.pack(side="bottom", pady=10)
+    credits_label.bind("<Button-1>", open_author_github)
+
+    # Handle the close event
     def on_root_close():
         root.destroy()
-        sys.exit(0)  # Exit the application
+        sys.exit(0)
 
     root.protocol("WM_DELETE_WINDOW", on_root_close)
 
