@@ -1,11 +1,13 @@
 import os
 import sys
 import platform
+import requests
 import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from PyPDF2 import PdfMerger
 import subprocess
+import webbrowser
 
 
 def get_version():
@@ -22,7 +24,29 @@ def get_version():
         return "Unknown"
 
 
-__version__ = get_version()
+def check_for_updates():
+    try:
+        response = requests.get(
+            "https://raw.githubusercontent.com/P-ict0/pdf-merger-app/refs/heads/main/VERSION"
+        )
+        latest_version = response.text.strip()
+
+        if latest_version > __version__:
+            prompt_update(latest_version)
+        else:
+            print("You are using the latest version.")
+
+    except Exception as e:
+        pass  # Silently ignore any errors
+
+
+def prompt_update(latest_version):
+    if messagebox.askyesno(
+        "Update Available",
+        f"A new version of PDF merger ({latest_version}) is available. Do you want to download it?",
+    ):
+        webbrowser.open("https://github.com/P-ict0/pdf-merger-app/releases/latest")
+        sys.exit(0)
 
 
 def merge_pdfs(file_paths, output_path):
@@ -34,7 +58,6 @@ def merge_pdfs(file_paths, output_path):
 
 
 def main():
-    print(f"PDF Merger version {__version__}")
     root = tk.Tk()
     root.title("PDF Merger")
     root.geometry("900x600")
@@ -296,4 +319,7 @@ def main():
 
 
 if __name__ == "__main__":
+    __version__ = get_version()
+    print(f"PDF Merger version {__version__}")
+    check_for_updates()
     main()
