@@ -1,5 +1,3 @@
-; Inno Setup Script
-
 #define MyAppName "PDF Merger"
 #ifndef MyAppVersion
   #define MyAppVersion "1.0.0"
@@ -19,7 +17,7 @@ AppUpdatesURL={#MyAppURL}
 CreateAppDir=yes
 DefaultDirName={pf}\{#MyAppName}
 LicenseFile=..\LICENSE
-PrivilegesRequiredOverridesAllowed=dialog
+PrivilegesRequired=admin
 OutputBaseFilename=pdf_merger_windows
 Compression=lzma
 SolidCompression=yes
@@ -34,7 +32,7 @@ Source: "..\dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"
-Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a &desktop icon"; GroupDescription: "Additional icons:"; Flags: unchecked
