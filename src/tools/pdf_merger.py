@@ -212,6 +212,16 @@ def pdf_merger_main(root_window=None):
         selected_files.pop(index)  # Remove from list
         update_file_list()  # Refresh Listbox
 
+    def delete_all_files():
+        if not selected_files:
+            messagebox.showwarning("Warning", "No PDFs to delete.")
+            return
+        if messagebox.askyesno(
+            "Delete All", "Are you sure you want to delete all selected PDFs?"
+        ):
+            selected_files.clear()
+            update_file_list()
+
     # GUI Layout
     frame = ttk.Frame(merger_window, padding=10)
     frame.pack(expand=True, fill=tk.BOTH)
@@ -264,13 +274,19 @@ def pdf_merger_main(root_window=None):
     move_up_btn.grid(row=4, column=2, padx=5, pady=(5, 0), sticky="n")
 
     move_down_btn = ttk.Button(frame, text="Move ↓", command=move_down, width=20)
-    move_down_btn.grid(row=4, column=2, padx=5, pady=(50, 5), sticky="n")
+    move_down_btn.grid(row=4, column=2, padx=5, pady=(60, 5), sticky="n")
 
     # Delete PDF button
     delete_btn = ttk.Button(
         frame, text="Delete PDF", command=delete_selected_file, width=20
     )
-    delete_btn.grid(row=4, column=2, padx=5, pady=(100, 5), sticky="n")
+    delete_btn.grid(row=4, column=2, padx=5, pady=(115, 5), sticky="n")
+
+    # Delete All button
+    delete_all_btn = ttk.Button(
+        frame, text="Delete All", command=delete_all_files, width=20
+    )
+    delete_all_btn.grid(row=4, column=2, padx=5, pady=(170, 5), sticky="n")
 
     # Merge PDFs button
     merge_btn_text = tk.StringVar(value="Merge PDFs")

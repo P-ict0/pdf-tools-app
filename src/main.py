@@ -85,6 +85,7 @@ def main():
     def open_pdf_merger():
         # Hide the main window
         root.withdraw()
+        # Import the PDF Merger tool here for performance
         from tools.pdf_merger import pdf_merger_main
 
         pdf_merger_main(root)  # Pass the root window
