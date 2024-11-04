@@ -1,20 +1,29 @@
 import os
-import platform
-import subprocess
-import sys
+import threading
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
+from tkinter import ttk, messagebox
 from PyPDF2 import PdfReader, PdfWriter
+from typing import Optional
+
 import styles
+from helpers import (
+    go_back,
+    select_files,
+    select_output_file,
+    on_failed,
+    ask_to_open_or_close,
+    open_file,
+    Animation,
+)
 
 
 def encrypt_pdf(input_file: str, output_file: str, password: str) -> None:
     """
     Encrypt a PDF file with a password.
 
-    :param input_file: Path to the input PDF file
-    :param output_file: Path to save the encrypted PDF file
-    :param password: Password for encrypting the PDF
+    :param input_file: Path to the input PDF file.
+    :param output_file: Path to save the encrypted PDF file.
+    :param password: Password for encrypting the PDF.
     """
     reader = PdfReader(input_file)
     writer = PdfWriter()
@@ -28,17 +37,16 @@ def encrypt_pdf(input_file: str, output_file: str, password: str) -> None:
         writer.write(f)
 
 
-def main(root_window=None) -> None:
+def main(root_window: Optional[tk.Tk] = None) -> None:
     """
     Main function to run the PDF Encryption tool.
 
-    :param root_window: Root window to hide when the PDF Encryptor is opened
+    :param root_window: Root window to hide when the PDF Encryptor is opened.
     """
 
-    def go_back():
-        encryptor_window.destroy()
-        if root_window:
-            root_window.deiconify()
+    # Hide the root window if provided
+    if root_window:
+        root_window.withdraw()
 
     # Create a new window for the PDF Encryptor
     encryptor_window = tk.Toplevel()
@@ -56,28 +64,28 @@ def main(root_window=None) -> None:
     output_file = ""
     password = tk.StringVar()
 
+    # Initialize Animation
+    encrypt_btn_text = tk.StringVar(value="Encrypt PDF")
+    animation = Animation(encryptor_window, encrypt_btn_text, "Encrypting", interval=500)
+
     # Functions
     def select_input_file() -> None:
         nonlocal input_file
-        file = filedialog.askopenfilename(
+        files = select_files(
+            multiple=False,
             title="Select PDF File",
             filetypes=[("PDF Files", "*.pdf")],
         )
-        if file:
-            input_file = file
+        if files:
+            input_file = files[0]
             input_label.config(text=os.path.basename(input_file))
 
-    def select_output_file() -> None:
+    def select_output() -> None:
         nonlocal output_file
-        file = filedialog.asksaveasfilename(
-            defaultextension=".pdf",
-            filetypes=[("PDF Files", "*.pdf")],
-            title="Select Output File",
-        )
-        output_file = file
-        output_label.config(
-            text=os.path.basename(output_file) or "No output file selected"
-        )
+        file = select_output_file(title="Select Output File")
+        if file:
+            output_file = file
+            output_label.config(text=os.path.basename(output_file) or "No output file selected")
 
     def encrypt() -> None:
         if not input_file:
@@ -92,35 +100,42 @@ def main(root_window=None) -> None:
             messagebox.showerror("Error", "Please enter a password.")
             return
 
+        # Disable button and start loading animation
+        encrypt_btn.config(state="disabled")
+        animation.start()
+
+        # Perform encryption in a separate thread
+        encrypt_thread = threading.Thread(target=perform_encryption)
+        encrypt_thread.start()
+
+    def perform_encryption() -> None:
         try:
             reader = PdfReader(input_file)
             if reader.is_encrypted:
-                messagebox.showerror("Error", "The selected PDF is already encrypted.")
-                return
+                raise Exception("The selected PDF is already encrypted.")
 
             encrypt_pdf(input_file, output_file, password.get())
-            messagebox.showinfo(
-                "Success", f"PDF has been encrypted and saved as:\n{output_file}"
+            # Schedule the success callback in the main thread
+            encryptor_window.after(
+                0,
+                lambda: encryption_completed(),
             )
-            ask_to_open_or_close()
         except Exception as e:
-            messagebox.showerror("Error", f"An error occurred:\n{e}")
+            # Schedule the failure callback in the main thread
+            encryptor_window.after(0, lambda: encryption_failed(e))
 
-    def ask_to_open_or_close() -> None:
-        response = messagebox.askquestion(
-            "Open Encrypted PDF",
-            "Do you want to open the encrypted PDF file?",
+    def encryption_completed() -> None:
+        messagebox.showinfo(
+            "Success", f"PDF has been encrypted and saved as:\n{output_file}"
         )
-        if response == "yes":
-            open_file(output_file)
+        animation.stop("Encrypt PDF")
+        ask_to_open_or_close("Open Encrypted PDF", "Do you want to open the encrypted PDF file?", output_file)
+        encrypt_btn.config(state="normal")
 
-    def open_file(filepath: str) -> None:
-        if platform.system() == "Windows":
-            os.startfile(filepath)
-        elif platform.system() == "Darwin":  # macOS
-            subprocess.call(["open", filepath])
-        else:  # Linux
-            subprocess.call(["xdg-open", filepath])
+    def encryption_failed(e: Exception) -> None:
+        on_failed(e, "An error occurred during encryption:")
+        animation.stop("Encrypt PDF")
+        encrypt_btn.config(state="normal")
 
     def toggle_password_visibility() -> None:
         if show_password_var.get():
@@ -133,27 +148,38 @@ def main(root_window=None) -> None:
     frame.pack(expand=True, fill=tk.BOTH)
 
     # Back Button
-    back_btn = ttk.Button(frame, text="← Back", command=go_back, style="TButton")
+    back_btn = ttk.Button(
+        frame,
+        text="← Back",
+        command=lambda: go_back(encryptor_window, root_window),
+        style="TButton"
+    )
     back_btn.grid(row=0, column=0, sticky="w", pady=5)
 
     # Input File Selection
     input_btn = ttk.Button(
-        frame, text="Select PDF to Encrypt", command=select_input_file, style="TButton"
+        frame,
+        text="Select PDF to Encrypt",
+        command=select_input_file,
+        style="TButton"
     )
     input_btn.grid(row=1, column=0, sticky="w", pady=5)
-    input_label = ttk.Label(frame, text="No input file selected")
+    input_label = ttk.Label(frame, text="No input file selected", background=styles.BG_COLOR)
     input_label.grid(row=1, column=1, sticky="w", padx=10)
 
     # Output File Selection
     output_btn = ttk.Button(
-        frame, text="Select Output File", command=select_output_file, style="TButton"
+        frame,
+        text="Select Output File",
+        command=select_output,
+        style="TButton"
     )
     output_btn.grid(row=2, column=0, sticky="w", pady=5)
-    output_label = ttk.Label(frame, text="No output file selected")
+    output_label = ttk.Label(frame, text="No output file selected", background=styles.BG_COLOR)
     output_label.grid(row=2, column=1, sticky="w", padx=10)
 
     # Password Entry
-    password_label = ttk.Label(frame, text="Enter Password:")
+    password_label = ttk.Label(frame, text="Enter Password:", background=styles.BG_COLOR)
     password_label.grid(row=3, column=0, sticky="w", pady=5)
     password_entry = ttk.Entry(frame, textvariable=password, show="*")
     password_entry.grid(row=3, column=1, sticky="w", padx=10)
@@ -165,21 +191,28 @@ def main(root_window=None) -> None:
         text="Show Password",
         variable=show_password_var,
         command=toggle_password_visibility,
+        style="TCheckbutton"
     )
     show_password_cb.grid(row=3, column=2, sticky="w", padx=10)
 
     # Encrypt Button
     encrypt_btn = ttk.Button(
-        frame, text="Encrypt PDF", command=encrypt, width=25, style="TButton"
+        frame,
+        textvariable=encrypt_btn_text,
+        command=encrypt,
+        width=25,
+        style="Large.TButton",
     )
     encrypt_btn.grid(row=5, column=0, columnspan=3, pady=20)
 
     # Handle the close event
     def on_encryptor_window_close():
-        encryptor_window.destroy()
-        if root_window:
-            root_window.destroy()
-        sys.exit(0)
+        go_back(encryptor_window, root_window)
 
     encryptor_window.protocol("WM_DELETE_WINDOW", on_encryptor_window_close)
+
     encryptor_window.mainloop()
+
+
+if __name__ == "__main__":
+    main()

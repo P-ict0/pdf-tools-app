@@ -1,21 +1,28 @@
 import os
-import platform
-import subprocess
-import sys
 import threading
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
+from tkinter import ttk
 from PyPDF2 import PdfReader, PdfWriter
+from typing import Optional
 
-import styles  # Ensure this module is available in your project
+import styles
+from helpers import (
+    go_back,
+    select_files,
+    select_output_file,
+    on_failed,
+    Animation,
+    ask_to_open_or_close,
+    open_file,
+)
 
 
 def compress_pdf(input_file: str, output_file: str) -> None:
     """
     Compress a PDF file by rewriting it with potentially optimized settings.
 
-    :param input_file: Path to the input PDF file
-    :param output_file: Path to save the compressed PDF file
+    :param input_file: Path to the input PDF file.
+    :param output_file: Path to save the compressed PDF file.
     """
     reader = PdfReader(input_file)
     writer = PdfWriter()
@@ -30,20 +37,16 @@ def compress_pdf(input_file: str, output_file: str) -> None:
         writer.write(fp)
 
 
-def main(root_window=None) -> None:
+def main(root_window: Optional[tk.Tk] = None) -> None:
     """
     Main function to run the PDF Compressor application.
 
-    :param root_window: Root window to hide when the PDF Compressor is opened
+    :param root_window: Root window to hide when the PDF Compressor is opened.
     """
 
-    def go_back():
-        """
-        Go back to the main window and close the PDF Compressor window.
-        """
-        compressor_window.destroy()
-        if root_window:
-            root_window.deiconify()
+    # Hide the root window if provided
+    if root_window:
+        root_window.withdraw()
 
     # Create a new window for the PDF Compressor
     compressor_window = tk.Toplevel()
@@ -60,63 +63,47 @@ def main(root_window=None) -> None:
     # Variables
     input_file = ""
     output_file = ""
-    is_animating = False
     original_size_mb = 0.0
 
     # Functions
     def select_input_file() -> None:
-        """
-        Select the input PDF file to compress and update the input file label.
-        """
         nonlocal input_file, original_size_mb
-        file = filedialog.askopenfilename(
+        files = select_files(
+            multiple=False,
             title="Select PDF File to Compress",
             filetypes=[("PDF Files", "*.pdf")],
         )
-        if file:
-            input_file = file
+        if files:
+            input_file = files[0]
             input_label.config(text=os.path.basename(input_file))
             original_size_mb = os.path.getsize(input_file) / (1024 * 1024)
             input_size_label.config(text=f"Original Size: {original_size_mb:.2f} MB")
 
-    def select_output_file() -> None:
-        """
-        Select the output file path for the compressed PDF.
-        """
+    def select_output() -> None:
         nonlocal output_file
-        file = filedialog.asksaveasfilename(
-            defaultextension=".pdf",
-            filetypes=[("PDF Files", "*.pdf")],
-            title="Select Output File",
-        )
+        file = select_output_file(title="Select Output File")
         if file:
             output_file = file
             output_label.config(text=os.path.basename(output_file))
 
     def compress() -> None:
-        """
-        Check if the selected files are valid and start the compression process.
-        """
         if not input_file:
-            messagebox.showerror("Error", "Please select an input file.")
+            tk.messagebox.showerror("Error", "Please select an input file.")
             return
 
         if not output_file:
-            messagebox.showerror("Error", "Please select an output file.")
+            tk.messagebox.showerror("Error", "Please select an output file.")
             return
 
         # Disable button and start loading animation
         compress_btn.config(state="disabled")
-        start_loading_animation()
+        animation.start()
 
         # Perform compression in a separate thread
         compress_thread = threading.Thread(target=perform_compression)
         compress_thread.start()
 
     def perform_compression() -> None:
-        """
-        Perform the compression process in a separate thread.
-        """
         try:
             compress_pdf(input_file, output_file)
             compressed_size = os.path.getsize(output_file)
@@ -126,105 +113,34 @@ def main(root_window=None) -> None:
                 if original_size_mb > 0
                 else 0
             )
-            # Schedule the messagebox and other GUI updates in the main thread
+            # Schedule the success callback in the main thread
             compressor_window.after(
                 0,
-                compression_completed,
-                compressed_size_mb,
-                compression_percentage,
+                lambda: compression_completed(compressed_size_mb, compression_percentage),
             )
         except Exception as e:
-            # Schedule the error message in the main thread
-            compressor_window.after(0, compression_failed, e)
+            # Schedule the failure callback in the main thread
+            compressor_window.after(0, lambda: compression_failed(e))
 
     def compression_completed(compressed_size_mb: float, compression_percentage: float) -> None:
-        """
-        Show a success message after the compression process is completed.
-        """
-        messagebox.showinfo(
+        tk.messagebox.showinfo(
             "Success",
             f"PDF has been compressed and saved to:\n{output_file}\n"
             f"Original Size: {original_size_mb:.2f} MB\n"
             f"Compressed Size: {compressed_size_mb:.2f} MB\n"
-            f"Compression: {compression_percentage:.2f}%"
+            f"Compression: {compression_percentage:.2f}%",
         )
-        stop_loading_animation()
+        animation.stop("Compress PDF")
         update_compression_info(compressed_size_mb, compression_percentage)
-        ask_to_open_or_close()
-
-    def compression_failed(e: Exception) -> None:
-        """
-        Show an error message if the compression process fails.
-        """
-        messagebox.showerror("Error", f"An error occurred:\n{e}")
-        stop_loading_animation()
-
-    def start_loading_animation() -> None:
-        """
-        Start the loading animation on the Compress button.
-        """
-        nonlocal is_animating
-        is_animating = True
-        compress_btn_text.set("Compressing.")
-        animate_loading()
-
-    def animate_loading() -> None:
-        """
-        Animate the loading text on the Compress button.
-        """
-        if not is_animating:
-            return
-        current_text = compress_btn_text.get()
-        if current_text.endswith("..."):
-            compress_btn_text.set("Compressing.")
-        else:
-            compress_btn_text.set(current_text + ".")
-        compressor_window.after(500, animate_loading)  # Repeat animation every 500 ms
-
-    def stop_loading_animation() -> None:
-        """
-        Stop the loading animation on the Compress button.
-        """
-        nonlocal is_animating
-        is_animating = False
-        compress_btn_text.set("Compress PDF")
+        ask_to_open_or_close("Open Compressed PDF", "Do you want to open the compressed PDF file?", output_file)
         compress_btn.config(state="normal")
 
-    def ask_to_open_or_close() -> None:
-        """
-        Ask the user if they want to open the compressed PDF file.
-        """
-        response = messagebox.askquestion(
-            "Open Compressed PDF",
-            "Do you want to open the compressed PDF file?",
-        )
-        if response == "yes":
-            open_file(output_file)
-        # Do not quit the application here; allow the user to continue using it if needed
-
-    def open_file(filepath: str) -> None:
-        """
-        Open the compressed PDF file using the default application based on the platform.
-
-        :param filepath: Path to the compressed PDF file
-        """
-        try:
-            if platform.system() == "Windows":
-                os.startfile(filepath)
-            elif platform.system() == "Darwin":  # macOS
-                subprocess.call(["open", filepath])
-            else:  # Linux
-                subprocess.call(["xdg-open", filepath])
-        except Exception as e:
-            messagebox.showerror("Error", f"Cannot open file:\n{e}")
+    def compression_failed(e: Exception) -> None:
+        on_failed(e, "An error occurred during compression:")
+        animation.stop("Compress PDF")
+        compress_btn.config(state="normal")
 
     def update_compression_info(new_size_mb: float, compression_percentage: float) -> None:
-        """
-        Update the GUI with compression information.
-
-        :param new_size_mb: Size of the compressed PDF in MB
-        :param compression_percentage: Percentage of compression achieved
-        """
         compression_info_label.config(
             text=f"Compressed Size: {new_size_mb:.2f} MB ({compression_percentage:.2f}% reduction)"
         )
@@ -234,7 +150,7 @@ def main(root_window=None) -> None:
     frame.pack(expand=True, fill=tk.BOTH)
 
     # Back Button
-    back_btn = ttk.Button(frame, text="← Back", command=go_back)
+    back_btn = ttk.Button(frame, text="← Back", command=lambda: go_back(compressor_window, root_window))
     back_btn.grid(row=0, column=0, sticky="w", pady=5)
 
     # Make rows and columns in the frame resizable
@@ -255,7 +171,7 @@ def main(root_window=None) -> None:
 
     # Output File Selection
     output_btn = ttk.Button(
-        frame, text="Select Output File", command=select_output_file, width=25
+        frame, text="Select Output File", command=select_output, width=25
     )
     output_btn.grid(row=3, column=0, pady=10, sticky="w")
 
@@ -277,6 +193,9 @@ def main(root_window=None) -> None:
     )
     compress_btn.grid(row=5, column=0, columnspan=2, pady=20)
 
+    # Initialize Animation
+    animation = Animation(compressor_window, compress_btn_text, "Compressing")
+
     # Warning Label
     warning_label = ttk.Label(
         frame,
@@ -290,13 +209,7 @@ def main(root_window=None) -> None:
 
     # Handle the close event
     def on_compressor_window_close():
-        """
-        Handle the close event by destroying the PDF Compressor window and showing the root window.
-        """
-        compressor_window.destroy()
-        if root_window:
-            root_window.destroy()
-        sys.exit(0)
+        go_back(compressor_window, root_window)
 
     compressor_window.protocol("WM_DELETE_WINDOW", on_compressor_window_close)
 
