@@ -7,7 +7,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from PyPDF2 import PdfReader, PdfWriter
 
-import styles
+import styles  # Ensure this module is available in your project
 
 
 def compress_pdf(input_file: str, output_file: str) -> None:
@@ -21,11 +21,10 @@ def compress_pdf(input_file: str, output_file: str) -> None:
     writer = PdfWriter()
 
     for page in reader.pages:
-        writer.add_page(page)
-
-    for page in reader.pages:
         page.compress_content_streams()  # CPU intensive!
         writer.add_page(page)
+
+    writer.add_metadata(reader.metadata)
 
     with open(output_file, "wb") as fp:
         writer.write(fp)
@@ -49,7 +48,7 @@ def main(root_window=None) -> None:
     # Create a new window for the PDF Compressor
     compressor_window = tk.Toplevel()
     compressor_window.title("PDF Compressor")
-    compressor_window.geometry("600x400")
+    compressor_window.geometry("600x480")  # Increased height to accommodate new warning
     compressor_window.resizable(False, False)
 
     # Set up styles
@@ -62,13 +61,14 @@ def main(root_window=None) -> None:
     input_file = ""
     output_file = ""
     is_animating = False
+    original_size_mb = 0.0
 
     # Functions
     def select_input_file() -> None:
         """
         Select the input PDF file to compress and update the input file label.
         """
-        nonlocal input_file
+        nonlocal input_file, original_size_mb
         file = filedialog.askopenfilename(
             title="Select PDF File to Compress",
             filetypes=[("PDF Files", "*.pdf")],
@@ -76,6 +76,8 @@ def main(root_window=None) -> None:
         if file:
             input_file = file
             input_label.config(text=os.path.basename(input_file))
+            original_size_mb = os.path.getsize(input_file) / (1024 * 1024)
+            input_size_label.config(text=f"Original Size: {original_size_mb:.2f} MB")
 
     def select_output_file() -> None:
         """
@@ -119,21 +121,35 @@ def main(root_window=None) -> None:
             compress_pdf(input_file, output_file)
             compressed_size = os.path.getsize(output_file)
             compressed_size_mb = compressed_size / (1024 * 1024)
+            compression_percentage = (
+                ((original_size_mb - compressed_size_mb) / original_size_mb) * 100
+                if original_size_mb > 0
+                else 0
+            )
             # Schedule the messagebox and other GUI updates in the main thread
-            compressor_window.after(0, compression_completed, compressed_size_mb)
+            compressor_window.after(
+                0,
+                compression_completed,
+                compressed_size_mb,
+                compression_percentage,
+            )
         except Exception as e:
             # Schedule the error message in the main thread
             compressor_window.after(0, compression_failed, e)
 
-    def compression_completed(compressed_size_mb: float) -> None:
+    def compression_completed(compressed_size_mb: float, compression_percentage: float) -> None:
         """
         Show a success message after the compression process is completed.
         """
         messagebox.showinfo(
             "Success",
-            f"PDF has been compressed and saved to:\n{output_file}\nSize: {compressed_size_mb:.2f} MB",
+            f"PDF has been compressed and saved to:\n{output_file}\n"
+            f"Original Size: {original_size_mb:.2f} MB\n"
+            f"Compressed Size: {compressed_size_mb:.2f} MB\n"
+            f"Compression: {compression_percentage:.2f}%"
         )
         stop_loading_animation()
+        update_compression_info(compressed_size_mb, compression_percentage)
         ask_to_open_or_close()
 
     def compression_failed(e: Exception) -> None:
@@ -202,6 +218,17 @@ def main(root_window=None) -> None:
         except Exception as e:
             messagebox.showerror("Error", f"Cannot open file:\n{e}")
 
+    def update_compression_info(new_size_mb: float, compression_percentage: float) -> None:
+        """
+        Update the GUI with compression information.
+
+        :param new_size_mb: Size of the compressed PDF in MB
+        :param compression_percentage: Percentage of compression achieved
+        """
+        compression_info_label.config(
+            text=f"Compressed Size: {new_size_mb:.2f} MB ({compression_percentage:.2f}% reduction)"
+        )
+
     # GUI Layout
     frame = ttk.Frame(compressor_window, padding=10)
     frame.pack(expand=True, fill=tk.BOTH)
@@ -222,14 +249,22 @@ def main(root_window=None) -> None:
     input_label = ttk.Label(frame, text="No input file selected")
     input_label.grid(row=1, column=1, padx=10, sticky="w")
 
+    # Original Size Label
+    input_size_label = ttk.Label(frame, text="Original Size: N/A")
+    input_size_label.grid(row=2, column=1, padx=10, sticky="w")
+
     # Output File Selection
     output_btn = ttk.Button(
         frame, text="Select Output File", command=select_output_file, width=25
     )
-    output_btn.grid(row=2, column=0, pady=10, sticky="w")
+    output_btn.grid(row=3, column=0, pady=10, sticky="w")
 
     output_label = ttk.Label(frame, text="No output file selected")
-    output_label.grid(row=2, column=1, padx=10, sticky="w")
+    output_label.grid(row=3, column=1, padx=10, sticky="w")
+
+    # Compression Information Label (Initially hidden)
+    compression_info_label = ttk.Label(frame, text="")
+    compression_info_label.grid(row=4, column=0, columnspan=2, pady=10, sticky="w")
 
     # Compress Button
     compress_btn_text = tk.StringVar(value="Compress PDF")
@@ -240,7 +275,18 @@ def main(root_window=None) -> None:
         width=30,
         style="Large.TButton",  # Ensure this style is defined in your styles module
     )
-    compress_btn.grid(row=3, column=0, columnspan=2, pady=30)
+    compress_btn.grid(row=5, column=0, columnspan=2, pady=20)
+
+    # Warning Label
+    warning_label = ttk.Label(
+        frame,
+        text="⚠️ Note: Compression effectiveness varies depending on the PDF content.",
+        foreground="red",
+        wraplength=580,  # Adjust wrap length as needed
+        justify="center",
+        font=("Helvetica", 10, "italic"),
+    )
+    warning_label.grid(row=6, column=0, columnspan=2, pady=(10, 0), sticky="nsew")
 
     # Handle the close event
     def on_compressor_window_close():
