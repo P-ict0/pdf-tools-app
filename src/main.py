@@ -85,6 +85,7 @@ def main() -> None:
     # Available tools mapped to their modules
     tools = {
         "PDF Merger": merger,
+        "PDF Encryption": encryptor,
     }
 
     # Function to open selected tool
