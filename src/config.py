@@ -16,7 +16,7 @@ def get_base_path():
 def get_version():
     try:
         base_path = get_base_path()
-        version_path = os.path.join(base_path, "..", "VERSION")
+        version_path = os.path.join(base_path, "VERSION")
         with open(version_path, "r") as f:
             return f.read().strip()
     except Exception:

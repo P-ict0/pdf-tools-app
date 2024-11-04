@@ -1,32 +1,30 @@
-# src/main.py
-
 import tkinter as tk
 from tkinter import ttk
 import sys
 import webbrowser
 import requests
 from tkinter import messagebox
-import os
+
+from tools import pdf_merger
 
 from config import (
     APP_NAME,
-    APP_VERSION,
     APP_AUTHOR,
     APP_URL,
     AUTHOR_GITHUB,
-    get_version,
+    APP_VERSION,
 )
 import styles
 
 
-def check_for_updates(__version__):
+def check_for_updates(current_version):
     try:
         response = requests.get(
             "https://raw.githubusercontent.com/P-ict0/pdf-merger-app/refs/heads/main/VERSION"
         )
         latest_version = response.text.strip()
 
-        if latest_version > __version__:
+        if latest_version > current_version:
             prompt_update(latest_version)
         else:
             print("You are using the latest version.")
@@ -45,9 +43,8 @@ def prompt_update(latest_version):
 
 
 def main():
-    __version__ = get_version()
-    print(f"{APP_NAME} version {__version__}")
-    check_for_updates(__version__)
+    print(f"{APP_NAME} version {APP_VERSION}")
+    check_for_updates(APP_VERSION)
 
     # Create the main window
     root = tk.Tk()
@@ -67,16 +64,15 @@ def main():
     label = ttk.Label(frame, text="Select a PDF Tool:", font=styles.FONT_LARGE_BOLD)
     label.pack(pady=20)
 
-    # Available tools
+    # Available tools mapped to their modules
     tools = {
-        "PDF Merger": "pdf_merger",
-        # Add more tools here
+        "PDF Merger": pdf_merger,
+        # "Another Tool": another_tool_module,
     }
 
     # Function to open selected tool
-    def open_tool(tool_module_name):
+    def open_tool(tool_module):
         root.withdraw()
-        tool_module = __import__(f"tools.{tool_module_name}", fromlist=[""])
         tool_module.main(root)
 
     # Function to dynamically create tool buttons
@@ -88,11 +84,11 @@ def main():
         row = 0
         col = 0
 
-        for tool_name, module_name in tools.items():
+        for tool_name, module in tools.items():
             btn = ttk.Button(
                 tool_frame,
                 text=tool_name,
-                command=lambda m=module_name: open_tool(m),
+                command=lambda m=module: open_tool(m),
                 width=20,
             )
             btn.grid(row=row, column=col, padx=10, pady=10)
