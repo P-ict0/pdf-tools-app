@@ -11,9 +11,9 @@ from helpers import (
     select_files,
     select_output_file,
     on_failed,
+    Animation,
     ask_to_open_or_close,
     open_file,
-    Animation,
 )
 
 
@@ -51,7 +51,7 @@ def main(root_window: Optional[tk.Tk] = None) -> None:
     # Create a new window for the PDF Encryptor
     encryptor_window = tk.Toplevel()
     encryptor_window.title("PDF Encryptor")
-    encryptor_window.geometry("600x400")
+    encryptor_window.geometry("600x450")
     encryptor_window.resizable(False, False)
 
     # Set up styles
@@ -195,13 +195,25 @@ def main(root_window: Optional[tk.Tk] = None) -> None:
     )
     show_password_cb.grid(row=3, column=2, sticky="w", padx=10)
 
+    # Warning Label
+    warning_label = ttk.Label(
+        frame,
+        text="⚠️ Warning: Encrypting large PDF files may take a significant amount of time.",
+        foreground="red",
+        wraplength=580,  # Adjust wrap length as needed
+        justify="center",
+        font=("Helvetica", 10, "italic"),
+        background=styles.BG_COLOR
+    )
+    warning_label.grid(row=4, column=0, columnspan=3, pady=(10, 0), sticky="w")
+
     # Encrypt Button
     encrypt_btn = ttk.Button(
         frame,
         textvariable=encrypt_btn_text,
         command=encrypt,
         width=25,
-        style="Large.TButton",
+        style="Large.TButton",  # Ensure this style is defined in your styles module
     )
     encrypt_btn.grid(row=5, column=0, columnspan=3, pady=20)
 

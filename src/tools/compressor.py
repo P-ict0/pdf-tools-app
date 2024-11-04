@@ -116,13 +116,17 @@ def main(root_window: Optional[tk.Tk] = None) -> None:
             # Schedule the success callback in the main thread
             compressor_window.after(
                 0,
-                lambda: compression_completed(compressed_size_mb, compression_percentage),
+                lambda: compression_completed(
+                    compressed_size_mb, compression_percentage
+                ),
             )
         except Exception as e:
             # Schedule the failure callback in the main thread
             compressor_window.after(0, lambda: compression_failed(e))
 
-    def compression_completed(compressed_size_mb: float, compression_percentage: float) -> None:
+    def compression_completed(
+        compressed_size_mb: float, compression_percentage: float
+    ) -> None:
         tk.messagebox.showinfo(
             "Success",
             f"PDF has been compressed and saved to:\n{output_file}\n"
@@ -132,7 +136,11 @@ def main(root_window: Optional[tk.Tk] = None) -> None:
         )
         animation.stop("Compress PDF")
         update_compression_info(compressed_size_mb, compression_percentage)
-        ask_to_open_or_close("Open Compressed PDF", "Do you want to open the compressed PDF file?", output_file)
+        ask_to_open_or_close(
+            "Open Compressed PDF",
+            "Do you want to open the compressed PDF file?",
+            output_file,
+        )
         compress_btn.config(state="normal")
 
     def compression_failed(e: Exception) -> None:
@@ -140,7 +148,9 @@ def main(root_window: Optional[tk.Tk] = None) -> None:
         animation.stop("Compress PDF")
         compress_btn.config(state="normal")
 
-    def update_compression_info(new_size_mb: float, compression_percentage: float) -> None:
+    def update_compression_info(
+        new_size_mb: float, compression_percentage: float
+    ) -> None:
         compression_info_label.config(
             text=f"Compressed Size: {new_size_mb:.2f} MB ({compression_percentage:.2f}% reduction)"
         )
@@ -150,7 +160,9 @@ def main(root_window: Optional[tk.Tk] = None) -> None:
     frame.pack(expand=True, fill=tk.BOTH)
 
     # Back Button
-    back_btn = ttk.Button(frame, text="← Back", command=lambda: go_back(compressor_window, root_window))
+    back_btn = ttk.Button(
+        frame, text="← Back", command=lambda: go_back(compressor_window, root_window)
+    )
     back_btn.grid(row=0, column=0, sticky="w", pady=5)
 
     # Make rows and columns in the frame resizable

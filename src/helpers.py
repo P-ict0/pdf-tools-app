@@ -34,7 +34,9 @@ def select_files(multiple: bool, title: str, filetypes: List[tuple]) -> List[str
         return [file] if file else []
 
 
-def select_output_file(title: str, defaultextension: str = ".pdf", filetypes=None) -> str:
+def select_output_file(
+    title: str, defaultextension: str = ".pdf", filetypes=None
+) -> str:
     """
     Open a save as dialog to select the output file path.
 
@@ -70,7 +72,9 @@ class Animation:
     A class to handle loading animations for buttons.
     """
 
-    def __init__(self, window: tk.Tk, text_var: tk.StringVar, base_text: str, interval: int = 500):
+    def __init__(
+        self, window: tk.Tk, text_var: tk.StringVar, base_text: str, interval: int = 500
+    ):
         """
         Initialize the Animation.
 

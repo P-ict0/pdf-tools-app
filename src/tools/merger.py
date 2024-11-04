@@ -130,7 +130,9 @@ def main(root_window: Optional[tk.Tk] = None) -> None:
             f"PDFs have been merged into:\n{output_file}\nTotal size: {merged_size_mb:.2f} MB",
         )
         animation.stop("Merge PDFs")
-        ask_to_open_or_close("Open Merged PDF", "Do you want to open the merged PDF file?", output_file)
+        ask_to_open_or_close(
+            "Open Merged PDF", "Do you want to open the merged PDF file?", output_file
+        )
         merge_btn.config(state="normal")
 
     def merge_failed(e: Exception) -> None:
@@ -188,7 +190,9 @@ def main(root_window: Optional[tk.Tk] = None) -> None:
     frame.pack(expand=True, fill=tk.BOTH)
 
     # Back Button
-    back_btn = ttk.Button(frame, text="← Back", command=lambda: go_back(merger_window, root_window))
+    back_btn = ttk.Button(
+        frame, text="← Back", command=lambda: go_back(merger_window, root_window)
+    )
     back_btn.grid(row=0, column=0, sticky="w", pady=5)
 
     # Make rows and columns in the frame resizable
