@@ -3,6 +3,8 @@
 # Contents
 
 - [📖 Description](#-description)
+- [🚀 Quick Start](#-quick-start)
+- [🖼️ Screenshots](#️-screenshots)
 - [✨ Features](#-features)
 - [📦 Installation](#-installation)
 - [💻 Development](#-development)
@@ -14,7 +16,17 @@
 
 The PDF Tools App is a simple, local and cross-platform desktop application that allows you to manipulate PDF files. Built with `Tkinter` for GUI and `PyPDF2` for PDF processing, this app currently supports Windows, macOS, and Linux.
 
+# 🚀 Quick Start
+
+Download the latest release from the [**releases**](https://github.com/P-ict0/pdf-tools-app/releases).
+
+# 🖼️ Screenshots
+
+## App
 ![App Demo](./media/app.png)
+
+## Merger
+![Merge PDF Demo](./media/merger.png)
 
 # ✨ Features
 
@@ -25,6 +37,8 @@ Right now, the app supports the following features:
 # 📦 Installation
 
 In the [**releases**](https://github.com/P-ict0/pdf-tools-app/releases) tab, you will find the executable for the app. Then you can run them directly.
+
+You can also clone the repository and run the app locally.
 
 # 💻 Development
 
