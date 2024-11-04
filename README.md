@@ -1,4 +1,18 @@
+<div align = center>
+
 # 🖨️ PDF Tools App 🖨️
+
+<br>
+
+![Badge Workflow]
+[![Badge License]][License]
+![Badge Language]
+[![Badge Pull Requests]][Pull Requests]
+[![Badge Issues]][Issues]
+
+<br>
+
+</div>
 
 # Contents
 
@@ -6,9 +20,9 @@
 - [🚀 Quick Start](#-quick-start)
 - [✨ Features](#-features)
 - [🖼️ Screenshots](#️-screenshots)
-   - [App](#app)
-   - [Merger](#merger)
-   - [Encryptor](#encryptor)
+  - [App](#app)
+  - [Merger](#merger)
+  - [Encryptor](#encryptor)
 - [📦 Installation](#-installation)
 - [💻 Development](#-development)
 - [👥 Contributing](#-contributing)
@@ -30,16 +44,18 @@ Right now, the app supports the following features:
 - **PDF Merger**: Merge multiple PDF files into a single PDF file.
 - **PDF Encryptor**: Encrypt a PDF file with a password.
 
-
 # 🖼️ Screenshots
 
 ## App
+
 ![App Demo](./media/app.png)
 
 ## Merger
+
 ![Merge PDF Demo](./media/merger.png)
 
 ## Encryptor
+
 ![Encrypt PDF Demo](./media/encryptor.png)
 
 # 📦 Installation
@@ -71,3 +87,19 @@ You can also clone the repository and run the app locally.
 # 👥 Contributing
 
 Contributions are welcome! Feel free to open issues or submit pull requests to help improve functionality, design, or cross-platform compatibility.
+
+<!----------------------------------------------------------------------------->
+
+[Pull Requests]: https://github.com/P-ict0/pdf-tools-app/pulls
+[Issues]: https://github.com/P-ict0/pdf-tools-app/issues
+[License]: LICENSE
+
+<!----------------------------------{ Badges }--------------------------------->
+
+[Badge Workflow]: https://github.com/P-ict0/pdf-tools-app/actions/workflows/build.yml/badge.svg
+[Badge Issues]: https://img.shields.io/github/issues/P-ict0/pdf-tools-app
+[Badge Pull Requests]: https://img.shields.io/github/issues-pr/P-ict0/pdf-tools-app
+[Badge Language]: https://img.shields.io/github/languages/top/P-ict0/pdf-tools-app
+[Badge License]: https://img.shields.io/github/license/P-ict0/pdf-tools-app
+[Badge Lines]: https://img.shields.io/tokei/lines/github/P-ict0/pdf-tools-app
+
