@@ -7,7 +7,6 @@ from PyPDF2 import PdfMerger
 import subprocess
 import sys
 
-from config import APP_NAME, APP_VERSION, get_version
 import styles
 
 
