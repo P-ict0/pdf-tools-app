@@ -330,7 +330,7 @@ def main(root_window=None) -> None:
     )
     delete_all_btn.grid(row=4, column=2, padx=5, pady=(170, 5), sticky="n")
 
-    # Merge PDFs Button with updated styling
+    # Merge PDFs Button
     merge_btn_text = tk.StringVar(value="Merge PDFs")
     merge_btn = ttk.Button(
         frame,
