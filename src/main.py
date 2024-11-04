@@ -67,7 +67,7 @@ def main():
     # Available tools mapped to their modules
     tools = {
         "PDF Merger": pdf_merger,
-        # "Another Tool": another_tool_module,
+        # Add more tools here as needed
     }
 
     # Function to open selected tool
@@ -99,19 +99,32 @@ def main():
 
     create_tool_buttons()
 
-    # Credits at the bottom
+    # Credits and version at the bottom
+    bottom_frame = ttk.Frame(frame)
+    bottom_frame.pack(side="bottom", fill=tk.X)
+
+    # Credits label
     def open_author_github(event):
         webbrowser.open(AUTHOR_GITHUB)
 
     credits_label = ttk.Label(
-        frame,
+        bottom_frame,
         text=f"Created by {APP_AUTHOR}",
         foreground=styles.HIGHLIGHT_COLOR,
         cursor="hand2",
         font=styles.FONT_DEFAULT,
     )
-    credits_label.pack(side="bottom", pady=10)
+    credits_label.pack(side="left", padx=10, pady=10)
     credits_label.bind("<Button-1>", open_author_github)
+
+    # Version label
+    version_label = ttk.Label(
+        bottom_frame,
+        text=f"Version {APP_VERSION}",
+        foreground=styles.FG_COLOR,
+        font=styles.FONT_DEFAULT,
+    )
+    version_label.pack(side="right", padx=10, pady=10)
 
     # Handle the close event
     def on_root_close():
