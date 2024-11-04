@@ -5,7 +5,7 @@ import webbrowser
 import requests
 from tkinter import messagebox
 
-from tools import merger, encryptor
+from tools import merger, encryptor, compressor
 
 from config import (
     APP_NAME,
@@ -67,7 +67,7 @@ def main() -> None:
     # Create the main window
     root = tk.Tk()
     root.title(APP_NAME)
-    root.geometry("600x400")
+    root.geometry("900x600")
     root.resizable(False, False)
 
     # Set up styles
@@ -86,6 +86,7 @@ def main() -> None:
     tools = {
         "PDF Merger": merger,
         "PDF Encryption": encryptor,
+        "PDF Compressor": compressor,
     }
 
     # Function to open selected tool
