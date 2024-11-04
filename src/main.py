@@ -17,7 +17,13 @@ from config import (
 import styles
 
 
-def check_for_updates(current_version):
+def check_for_updates(current_version: str) -> None:
+    """
+    Check for updates by comparing the current version with the latest version on GitHub.
+    If a new version is available, prompt the user to download it.
+
+    :param current_version: The current version of the application
+    """
     try:
         response = requests.get(
             "https://raw.githubusercontent.com/P-ict0/pdf-merger-app/refs/heads/main/VERSION"
@@ -33,7 +39,14 @@ def check_for_updates(current_version):
         pass  # Silently ignore any errors
 
 
-def prompt_update(latest_version):
+def prompt_update(latest_version: str) -> None:
+    """
+    Prompt the user to download the latest version of the application.
+    If the user agrees, open the download URL in the default web browser and close the app.
+    If not, continue running the current version.
+
+    :param latest_version: The latest version available on GitHub
+    """
     if messagebox.askyesno(
         "Update Available",
         f"A new version ({latest_version}) is available. Do you want to download it?",
@@ -42,7 +55,12 @@ def prompt_update(latest_version):
         sys.exit(0)
 
 
-def main():
+def main() -> None:
+    """
+    Main function to create the application window and run the main event loop.
+    Displays a list of available PDF tools dynamically and allows the user to select one.
+    When a tool is selected, the main window is hidden, and the tool's main function is called.
+    """
     print(f"{APP_NAME} version {APP_VERSION}")
     check_for_updates(APP_VERSION)
 
@@ -71,12 +89,17 @@ def main():
     }
 
     # Function to open selected tool
-    def open_tool(tool_module):
+    def open_tool(tool_module) -> None:
+        """
+        Open the selected tool by calling its main function.
+
+        :param tool_module: The module containing the tool's main function
+        """
         root.withdraw()
         tool_module.main(root)
 
     # Function to dynamically create tool buttons
-    def create_tool_buttons():
+    def create_tool_buttons() -> None:
         tool_frame = ttk.Frame(frame)
         tool_frame.pack(pady=10)
 
@@ -104,7 +127,7 @@ def main():
     bottom_frame.pack(side="bottom", fill=tk.X)
 
     # Credits label
-    def open_author_github(event):
+    def open_author_github(event: tk.Event) -> None:
         webbrowser.open(AUTHOR_GITHUB)
 
     credits_label = ttk.Label(
@@ -127,7 +150,10 @@ def main():
     version_label.pack(side="right", padx=10, pady=10)
 
     # Handle the close event
-    def on_root_close():
+    def on_root_close() -> None:
+        """
+        Handle the close event by destroying the root window and exiting the application.
+        """
         root.destroy()
         sys.exit(0)
 

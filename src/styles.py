@@ -1,3 +1,5 @@
+from tkinter import ttk
+
 # Colors (Nord Theme)
 BG_COLOR = "#2E3440"
 FG_COLOR = "#D8DEE9"
@@ -13,7 +15,12 @@ FONT_LARGE_BOLD = ("Helvetica", 16, "bold")
 FONT_XLARGE_BOLD = ("Helvetica", 18, "bold")
 
 
-def set_theme(style):
+def set_theme(style: ttk.Style) -> None:
+    """
+    Set the theme for the application (Nord theme).
+
+    :param style: ttk.Style object
+    """
     style.theme_use("clam")
     style.configure("TFrame", background=BG_COLOR)
     style.configure(

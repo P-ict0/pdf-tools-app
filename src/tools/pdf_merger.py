@@ -10,7 +10,13 @@ import sys
 import styles
 
 
-def merge_pdfs(file_paths, output_path):
+def merge_pdfs(file_paths: list[str], output_path: str) -> None:
+    """
+    Merge multiple PDF files into a single PDF file.
+
+    :param file_paths: List of PDF file paths
+    :param output_path: Output PDF file path
+    """
     merger = PdfMerger()
     for pdf in file_paths:
         merger.append(pdf)
@@ -18,8 +24,17 @@ def merge_pdfs(file_paths, output_path):
     merger.close()
 
 
-def main(root_window=None):
+def main(root_window=None) -> None:
+    """
+    Main function to run the PDF Merger application.
+
+    :param root_window: Root window to hide when the PDF Merger is opened
+    """
+
     def go_back():
+        """
+        Go back to the main window and close the PDF Merger window.
+        """
         merger_window.destroy()
         if root_window:
             root_window.deiconify()
@@ -42,7 +57,10 @@ def main(root_window=None):
     is_animating = False
 
     # Functions
-    def select_file():
+    def select_file() -> None:
+        """
+        Select PDF files to merge and update the list of selected files.
+        """
         files = filedialog.askopenfilenames(
             title="Select PDF Files",
             filetypes=[("PDF Files", "*.pdf")],
@@ -52,7 +70,10 @@ def main(root_window=None):
                 selected_files.append(file)
         update_file_list()
 
-    def update_file_list():
+    def update_file_list() -> None:
+        """
+        Update the list of selected files in the Listbox.
+        """
         file_list.delete(0, tk.END)
         total_size = 0
         for idx, file in enumerate(selected_files):
@@ -65,7 +86,10 @@ def main(root_window=None):
         total_size_mb = total_size / (1024 * 1024)
         total_size_label.config(text=f"Total size: {total_size_mb:.2f} MB")
 
-    def select_output_file():
+    def select_output_file() -> None:
+        """
+        Select the output file path for the merged PDF.
+        """
         nonlocal output_file
         file = filedialog.asksaveasfilename(
             defaultextension=".pdf",
@@ -75,7 +99,10 @@ def main(root_window=None):
         output_file = file
         output_label.config(text=output_file or "No output file selected")
 
-    def merge():
+    def merge() -> None:
+        """
+        Check if the selected files and output file are valid and start the merging process.
+        """
         if not output_file:
             messagebox.showerror("Error", "Please select an output file.")
             return
@@ -92,7 +119,10 @@ def main(root_window=None):
         merge_thread = threading.Thread(target=perform_merge)
         merge_thread.start()
 
-    def perform_merge():
+    def perform_merge() -> None:
+        """
+        Perform the merging process in a separate thread.
+        """
         try:
             merge_pdfs(selected_files, output_file)
             merged_size = os.path.getsize(output_file)
@@ -103,7 +133,10 @@ def main(root_window=None):
             # Schedule the error message in the main thread
             merger_window.after(0, merge_failed, e)
 
-    def merge_completed(merged_size_mb):
+    def merge_completed(merged_size_mb: float) -> None:
+        """
+        Show a success message after the merging process is completed.
+        """
         messagebox.showinfo(
             "Success",
             f"PDFs have been merged into:\n{output_file}\nTotal size: {merged_size_mb:.2f} MB",
@@ -111,17 +144,26 @@ def main(root_window=None):
         stop_loading_animation()
         ask_to_open_or_close()
 
-    def merge_failed(e):
+    def merge_failed(e: Exception) -> None:
+        """
+        Show an error message if the merging process fails.
+        """
         messagebox.showerror("Error", f"An error occurred:\n{e}")
         stop_loading_animation()
 
-    def start_loading_animation():
+    def start_loading_animation() -> None:
+        """
+        Start the loading animation on the Merge PDFs button.
+        """
         nonlocal is_animating
         is_animating = True
         merge_btn_text.set("Merging.")
         animate_loading()
 
-    def animate_loading():
+    def animate_loading() -> None:
+        """
+        Animate the loading text on the Merge PDFs button.
+        """
         if not is_animating:
             return
         current_text = merge_btn_text.get()
@@ -131,13 +173,19 @@ def main(root_window=None):
             merge_btn_text.set(current_text + ".")
         merger_window.after(500, animate_loading)  # Repeat animation every 500 ms
 
-    def stop_loading_animation():
+    def stop_loading_animation() -> None:
+        """
+        Stop the loading animation on the Merge PDFs button.
+        """
         nonlocal is_animating
         is_animating = False
         merge_btn_text.set("Merge PDFs")
         merge_btn.config(state="normal")
 
-    def ask_to_open_or_close():
+    def ask_to_open_or_close() -> None:
+        """
+        Ask the user if they want to open the merged PDF file.
+        """
         response = messagebox.askquestion(
             "Open Merged PDF",
             "Do you want to open the merged PDF file?",
@@ -146,7 +194,12 @@ def main(root_window=None):
             open_file(output_file)
         # Do not quit the application here; allow the user to continue using it if needed
 
-    def open_file(filepath):
+    def open_file(filepath: str) -> None:
+        """
+        Open the merged PDF file using the default application based on the platform.
+
+        :param filepath: Path to the merged PDF file
+        """
         if platform.system() == "Windows":
             os.startfile(filepath)
         elif platform.system() == "Darwin":  # macOS
@@ -154,7 +207,10 @@ def main(root_window=None):
         else:  # Linux
             subprocess.call(["xdg-open", filepath])
 
-    def move_up():
+    def move_up() -> None:
+        """
+        Move the selected PDF file up in the list.
+        """
         selected_index = file_list.curselection()
         if not selected_index:
             return
@@ -167,7 +223,10 @@ def main(root_window=None):
             update_file_list()
             file_list.select_set(index - 1)
 
-    def move_down():
+    def move_down() -> None:
+        """
+        Move the selected PDF file down in the list.
+        """
         selected_index = file_list.curselection()
         if not selected_index:
             return
@@ -180,7 +239,10 @@ def main(root_window=None):
             update_file_list()
             file_list.select_set(index + 1)
 
-    def delete_selected_file():
+    def delete_selected_file() -> None:
+        """
+        Delete the selected PDF file from the list.
+        """
         selected_index = file_list.curselection()
         if not selected_index:
             messagebox.showwarning("Warning", "No PDF selected to delete.")
@@ -189,7 +251,10 @@ def main(root_window=None):
         selected_files.pop(index)  # Remove from list
         update_file_list()  # Refresh Listbox
 
-    def delete_all_files():
+    def delete_all_files() -> None:
+        """
+        Delete all selected PDF files from the list.
+        """
         if not selected_files:
             messagebox.showwarning("Warning", "No PDFs to delete.")
             return
@@ -278,6 +343,9 @@ def main(root_window=None):
 
     # Handle the close event
     def on_merger_window_close():
+        """
+        Handle the close event by destroying the PDF Merger window and showing the root window.
+        """
         merger_window.destroy()
         if root_window:
             root_window.destroy()
