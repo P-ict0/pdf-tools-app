@@ -1,5 +1,3 @@
-from tkinter import ttk
-
 # Colors (Nord Theme)
 BG_COLOR = "#2E3440"
 FG_COLOR = "#D8DEE9"
