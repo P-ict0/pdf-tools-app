@@ -5,6 +5,9 @@
 - [📖 Description](#-description)
 - [🚀 Quick Start](#-quick-start)
 - [🖼️ Screenshots](#️-screenshots)
+   - [App](#app)
+   - [Merger](#merger)
+   - [Encryptor](#encryptor)
 - [✨ Features](#-features)
 - [📦 Installation](#-installation)
 - [💻 Development](#-development)
@@ -28,11 +31,15 @@ Download the latest release from the [**releases**](https://github.com/P-ict0/pd
 ## Merger
 ![Merge PDF Demo](./media/merger.png)
 
+## Encryptor
+![Encrypt PDF Demo](./media/encryptor.png)
+
 # ✨ Features
 
 Right now, the app supports the following features:
 
 - **PDF Merger**: Merge multiple PDF files into a single PDF file.
+- **PDF Encryptor**: Encrypt a PDF file with a password.
 
 # 📦 Installation
 
