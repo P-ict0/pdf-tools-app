@@ -26,7 +26,7 @@ def check_for_updates(current_version: str) -> None:
     """
     try:
         response = requests.get(
-            "https://raw.githubusercontent.com/P-ict0/pdf-merger-app/refs/heads/main/VERSION"
+            "https://raw.githubusercontent.com/P-ict0/pdf-tools-app/refs/heads/main/VERSION"
         )
         latest_version = response.text.strip()
 

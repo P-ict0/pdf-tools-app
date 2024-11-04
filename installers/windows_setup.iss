@@ -4,7 +4,7 @@
   #define MyAppVersion "1.0.0"
 #endif
 #define MyAppPublisher "P-ict0"
-#define MyAppURL "https://github.com/P-ict0/pdf-merger-app"
+#define MyAppURL "https://github.com/P-ict0/pdf-tools-app"
 #define MyAppExeName "pdf_tools_windows.exe"
 
 [Setup]
