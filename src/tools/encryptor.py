@@ -122,17 +122,23 @@ def main(root_window=None) -> None:
         else:  # Linux
             subprocess.call(["xdg-open", filepath])
 
+    def toggle_password_visibility() -> None:
+        if show_password_var.get():
+            password_entry.config(show="")
+        else:
+            password_entry.config(show="*")
+
     # GUI Layout
     frame = ttk.Frame(encryptor_window, padding=10)
     frame.pack(expand=True, fill=tk.BOTH)
 
     # Back Button
-    back_btn = ttk.Button(frame, text="← Back", command=go_back)
+    back_btn = ttk.Button(frame, text="← Back", command=go_back, style="TButton")
     back_btn.grid(row=0, column=0, sticky="w", pady=5)
 
     # Input File Selection
     input_btn = ttk.Button(
-        frame, text="Select PDF to Encrypt", command=select_input_file
+        frame, text="Select PDF to Encrypt", command=select_input_file, style="TButton"
     )
     input_btn.grid(row=1, column=0, sticky="w", pady=5)
     input_label = ttk.Label(frame, text="No input file selected")
@@ -140,7 +146,7 @@ def main(root_window=None) -> None:
 
     # Output File Selection
     output_btn = ttk.Button(
-        frame, text="Select Output File", command=select_output_file
+        frame, text="Select Output File", command=select_output_file, style="TButton"
     )
     output_btn.grid(row=2, column=0, sticky="w", pady=5)
     output_label = ttk.Label(frame, text="No output file selected")
@@ -152,15 +158,21 @@ def main(root_window=None) -> None:
     password_entry = ttk.Entry(frame, textvariable=password, show="*")
     password_entry.grid(row=3, column=1, sticky="w", padx=10)
 
+    # Checkbox to view password
+    show_password_var = tk.BooleanVar(value=False)
+    show_password_cb = ttk.Checkbutton(
+        frame,
+        text="Show Password",
+        variable=show_password_var,
+        command=toggle_password_visibility,
+    )
+    show_password_cb.grid(row=3, column=2, sticky="w", padx=10)
+
     # Encrypt Button
     encrypt_btn = ttk.Button(
-        frame,
-        text="Encrypt PDF",
-        command=encrypt,
-        width=25,
-        style="Large.TButton",  # Use the large button style
+        frame, text="Encrypt PDF", command=encrypt, width=25, style="TButton"
     )
-    encrypt_btn.grid(row=4, column=0, columnspan=2, pady=20)
+    encrypt_btn.grid(row=5, column=0, columnspan=3, pady=20)
 
     # Handle the close event
     def on_encryptor_window_close():
