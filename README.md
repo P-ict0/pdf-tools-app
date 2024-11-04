@@ -90,8 +90,6 @@ Contributions are welcome! Feel free to open issues or submit pull requests to h
 
 <!----------------------------------------------------------------------------->
 
-[Stars]: https://starchart.cc/P-ict0/pdf-tools-app
-[DWS]: https://github.com/P-ict0/pdf-tools-app
 [Pull Requests]: https://github.com/P-ict0/pdf-tools-app/pulls
 [Issues]: https://github.com/P-ict0/pdf-tools-app/issues
 [License]: LICENSE
@@ -99,3 +97,9 @@ Contributions are welcome! Feel free to open issues or submit pull requests to h
 <!----------------------------------{ Badges }--------------------------------->
 
 [Badge Workflow]: https://github.com/P-ict0/pdf-tools-app/actions/workflows/build.yml/badge.svg
+[Badge Issues]: https://img.shields.io/github/issues/P-ict0/pdf-tools-app
+[Badge Pull Requests]: https://img.shields.io/github/issues-pr/P-ict0/pdf-tools-app
+[Badge Language]: https://img.shields.io/github/languages/top/P-ict0/pdf-tools-app
+[Badge License]: https://img.shields.io/github/license/P-ict0/pdf-tools-app
+[Badge Lines]: https://img.shields.io/tokei/lines/github/P-ict0/pdf-tools-app
+
