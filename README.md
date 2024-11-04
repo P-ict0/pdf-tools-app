@@ -4,11 +4,11 @@
 
 - [📖 Description](#-description)
 - [🚀 Quick Start](#-quick-start)
+- [✨ Features](#-features)
 - [🖼️ Screenshots](#️-screenshots)
    - [App](#app)
    - [Merger](#merger)
    - [Encryptor](#encryptor)
-- [✨ Features](#-features)
 - [📦 Installation](#-installation)
 - [💻 Development](#-development)
 - [👥 Contributing](#-contributing)
@@ -23,6 +23,14 @@ The PDF Tools App is a simple, local and cross-platform desktop application that
 
 Download the latest release from the [**releases**](https://github.com/P-ict0/pdf-tools-app/releases).
 
+# ✨ Features
+
+Right now, the app supports the following features:
+
+- **PDF Merger**: Merge multiple PDF files into a single PDF file.
+- **PDF Encryptor**: Encrypt a PDF file with a password.
+
+
 # 🖼️ Screenshots
 
 ## App
@@ -33,13 +41,6 @@ Download the latest release from the [**releases**](https://github.com/P-ict0/pd
 
 ## Encryptor
 ![Encrypt PDF Demo](./media/encryptor.png)
-
-# ✨ Features
-
-Right now, the app supports the following features:
-
-- **PDF Merger**: Merge multiple PDF files into a single PDF file.
-- **PDF Encryptor**: Encrypt a PDF file with a password.
 
 # 📦 Installation
 
