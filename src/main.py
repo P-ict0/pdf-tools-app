@@ -3,6 +3,7 @@ import tkinter as tk
 import webbrowser
 from tkinter import messagebox
 from tkinter import ttk
+import requests
 
 from tools import merger, encryptor, compressor
 
