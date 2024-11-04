@@ -1,12 +1,13 @@
-import tkinter as tk
-from tkinter import ttk
 import sys
+import tkinter as tk
 import webbrowser
-import requests
 from tkinter import messagebox
+from tkinter import ttk
+import requests
 
-from tools import merger, encryptor
+from tools import merger, encryptor, compressor
 
+import styles
 from config import (
     APP_NAME,
     APP_AUTHOR,
@@ -14,7 +15,6 @@ from config import (
     AUTHOR_GITHUB,
     APP_VERSION,
 )
-import styles
 
 
 def check_for_updates(current_version: str) -> None:
@@ -67,7 +67,7 @@ def main() -> None:
     # Create the main window
     root = tk.Tk()
     root.title(APP_NAME)
-    root.geometry("600x400")
+    root.geometry("900x600")
     root.resizable(False, False)
 
     # Set up styles
@@ -86,6 +86,7 @@ def main() -> None:
     tools = {
         "PDF Merger": merger,
         "PDF Encryption": encryptor,
+        "PDF Compressor": compressor,
     }
 
     # Function to open selected tool
@@ -136,6 +137,7 @@ def main() -> None:
         foreground=styles.HIGHLIGHT_COLOR,
         cursor="hand2",
         font=styles.FONT_DEFAULT,
+        background=styles.BG_COLOR,
     )
     credits_label.pack(side="left", padx=10, pady=10)
     credits_label.bind("<Button-1>", open_author_github)
@@ -146,6 +148,7 @@ def main() -> None:
         text=f"Version {APP_VERSION}",
         foreground=styles.FG_COLOR,
         font=styles.FONT_DEFAULT,
+        background=styles.BG_COLOR,
     )
     version_label.pack(side="right", padx=10, pady=10)
 
