@@ -111,7 +111,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: linux_executable
-          path: dist/${{ matrix.output-name }}
+          path: dist/pdf_tools_linux
 
   release:
     needs: build
@@ -152,7 +152,7 @@ jobs:
           files: |
             ./artifacts/windows/*.exe
             ./artifacts/macos/pdf_tools_macos.dmg
-            ./artifacts/linux/${{ matrix.output-name }}
+            ./artifacts/linux/pdf_tools_linux
           tag_name: "v${{ env.VERSION }}"
           name: "PDF Tools v${{ env.VERSION }}"
           draft: false
