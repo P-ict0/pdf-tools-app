@@ -5,7 +5,7 @@ import webbrowser
 import requests
 from tkinter import messagebox
 
-from tools import pdf_merger
+from tools import merger, encryptor
 
 from config import (
     APP_NAME,
@@ -84,8 +84,7 @@ def main() -> None:
 
     # Available tools mapped to their modules
     tools = {
-        "PDF Merger": pdf_merger,
-        # Add more tools here as needed
+        "PDF Merger": merger,
     }
 
     # Function to open selected tool
