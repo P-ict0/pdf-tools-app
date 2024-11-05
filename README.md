@@ -2,7 +2,9 @@
 
 # 🖨️ PDF Tools App 🖨️
 
-<br>
+<p align="center">
+  <img src="./media/app.png" alt="App Demo" width="50%">
+</p>
 
 ![Badge Workflow]
 [![Badge License]][License]
@@ -47,13 +49,7 @@ Right now, the app supports the following features:
 
 # 🖼️ Screenshots
 
-![App Demo](./media/app.png)
-
 For screenshots of all the tools a look at [DEMO.md](./DEMO.md)
-
-## Compressor
-
-![Compress PDF Demo](./media/compressor.png)
 
 # 📦 Installation
 
