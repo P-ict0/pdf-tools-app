@@ -23,6 +23,7 @@
   - [App](#app)
   - [Merger](#merger)
   - [Encryptor](#encryptor)
+  - [Compressor](#compressor)
 - [📦 Installation](#-installation)
 - [🗑️ Uninstall](#%EF%B8%8F-uninstall)
 - [💻 Development](#-development)
