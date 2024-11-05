@@ -2,7 +2,11 @@
 
 # 🖨️ PDF Tools App 🖨️
 
-<br>
+**A local, offline and more simple version of [iLovePDF](https://www.ilovepdf.com/)**
+
+<p align="center">
+  <img src="./media/app.png" alt="App Demo" width="50%">
+</p>
 
 ![Badge Workflow]
 [![Badge License]][License]
@@ -20,10 +24,6 @@
 - [🚀 Quick Start](#-quick-start)
 - [✨ Features](#-features)
 - [🖼️ Screenshots](#%EF%B8%8F-screenshots)
-  - [App](#app)
-  - [Merger](#merger)
-  - [Encryptor](#encryptor)
-  - [Compressor](#compressor)
 - [📦 Installation](#-installation)
 - [🗑️ Uninstall](#%EF%B8%8F-uninstall)
 - [💻 Development](#-development)
@@ -33,7 +33,9 @@
 
 💻 **Windows, Linux and Mac compatible.** 💻
 
-The PDF Tools App is a simple, local and cross-platform desktop application that allows you to manipulate PDF files. Built with `Tkinter` for GUI and `PyPDF2` for PDF processing, this app currently supports Windows, macOS, and Linux.
+The PDF Tools App is a simple, offline and local and cross-platform desktop application that allows you to manipulate PDF files. Built with `Tkinter` for GUI and `PyPDF2` for PDF processing, this app currently supports Windows, macOS, and Linux. So you don't have to upload your PDF files to the web.
+
+**Basically, an app that you can install locally on your system similar to [iLovePDF](https://www.ilovepdf.com/), but works offline and is much simpler.**
 
 # 🚀 Quick Start
 
@@ -51,21 +53,7 @@ Right now, the app supports the following features:
 
 # 🖼️ Screenshots
 
-## App
-
-![App Demo](./media/app.png)
-
-## Merger
-
-![Merge PDF Demo](./media/merger.png)
-
-## Encryptor
-
-![Encrypt PDF Demo](./media/encryptor.png)
-
-## Compressor
-
-![Compress PDF Demo](./media/compressor.png)
+For screenshots of all the tools a look at [DEMO.md](./DEMO.md)
 
 # 📦 Installation
 
