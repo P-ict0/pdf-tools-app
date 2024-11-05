@@ -7,16 +7,24 @@
 
 ## App
 
-![App Demo](./media/app.png)
+<p align="left">
+  <img src="./media/app.png" alt="App Demo" width="50%">
+</p>
 
 ## Merger
 
-![Merge PDF Demo](./media/merger.png)
+<p align="left">
+  <img src="./media/merger.png" alt="Merge PDF Demo" width="50%">
+</p>
 
 ## Encryptor
 
-![Encrypt PDF Demo](./media/encryptor.png)
+<p align="left">
+  <img src="./media/encryptor.png" alt="Encrypt PDF Demo" width="50%">
+</p>
 
 ## Compressor
 
-![Compress PDF Demo](./media/compressor.png)
+<p align="left">
+  <img src="./media/compressor.png" alt="Compress PDF Demo" width="50%">
+</p>
