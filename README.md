@@ -20,10 +20,6 @@
 - [🚀 Quick Start](#-quick-start)
 - [✨ Features](#-features)
 - [🖼️ Screenshots](#%EF%B8%8F-screenshots)
-  - [App](#app)
-  - [Merger](#merger)
-  - [Encryptor](#encryptor)
-  - [Compressor](#compressor)
 - [📦 Installation](#-installation)
 - [🗑️ Uninstall](#%EF%B8%8F-uninstall)
 - [💻 Development](#-development)
@@ -51,17 +47,9 @@ Right now, the app supports the following features:
 
 # 🖼️ Screenshots
 
-## App
-
 ![App Demo](./media/app.png)
 
-## Merger
-
-![Merge PDF Demo](./media/merger.png)
-
-## Encryptor
-
-![Encrypt PDF Demo](./media/encryptor.png)
+For screenshots of all the tools a look at [DEMO.md](./DEMO.md)
 
 ## Compressor
 
