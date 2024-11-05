@@ -43,6 +43,7 @@ Right now, the app supports the following features:
 
 - **PDF Merger**: Merge multiple PDF files into a single PDF file.
 - **PDF Encryptor**: Encrypt a PDF file with a password.
+- **PDF Compressor**: Compress your PDFs.
 
 # 🖼️ Screenshots
 
@@ -57,6 +58,10 @@ Right now, the app supports the following features:
 ## Encryptor
 
 ![Encrypt PDF Demo](./media/encryptor.png)
+
+## Compressor
+
+![Compress PDF Demo](./media/compressor.png)
 
 # 📦 Installation
 
