@@ -24,6 +24,7 @@
   - [Merger](#merger)
   - [Encryptor](#encryptor)
 - [📦 Installation](#-installation)
+- [🗑️ Uninstall](#-uninstall)
 - [💻 Development](#-development)
 - [👥 Contributing](#-contributing)
 
@@ -70,6 +71,10 @@ Right now, the app supports the following features:
 For OS-specific installation instructions, please refer to the [INSTALL.md](./INSTALL.md) file.
 
 You can also clone the repository and run the app locally.
+
+# 🗑️ Uninstall
+
+Refer to the [INSTALL.md](./INSTALL.md) file for OS-specific uninstallation instructions.
 
 # 💻 Development
 
