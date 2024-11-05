@@ -24,7 +24,7 @@
   - [Merger](#merger)
   - [Encryptor](#encryptor)
 - [📦 Installation](#-installation)
-- [🗑️ Uninstall](#-uninstall)
+- [🗑️ Uninstall](#%EF%B8%8F-uninstall)
 - [💻 Development](#-development)
 - [👥 Contributing](#-contributing)
 
