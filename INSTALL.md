@@ -2,11 +2,11 @@
 
 # Contents
 
-- [Install](#-install)
+- [📦 Install](#-install)
   - [Windows](#windows)
   - [MacOS](#macos)
   - [Linux](#linux)
-- [Uninstall](#-uninstall)
+- [🗑️ Uninstall](#-uninstall)
   - [Windows](#windows-1)
   - [MacOS](#macos-1)
   - [Linux](#linux-1)
