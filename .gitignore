@@ -24,3 +24,7 @@ env/
 
 # Python package files
 *.egg-info/
+
+# IDE files
+.idea/
+.vscode/
