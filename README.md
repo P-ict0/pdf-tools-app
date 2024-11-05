@@ -19,11 +19,12 @@
 - [📖 Description](#-description)
 - [🚀 Quick Start](#-quick-start)
 - [✨ Features](#-features)
-- [🖼️ Screenshots](#️-screenshots)
+- [🖼️ Screenshots](#%EF%B8%8F-screenshots)
   - [App](#app)
   - [Merger](#merger)
   - [Encryptor](#encryptor)
 - [📦 Installation](#-installation)
+- [🗑️ Uninstall](#%EF%B8%8F-uninstall)
 - [💻 Development](#-development)
 - [👥 Contributing](#-contributing)
 
@@ -36,6 +37,8 @@ The PDF Tools App is a simple, local and cross-platform desktop application that
 # 🚀 Quick Start
 
 Download the latest release from the [**releases**](https://github.com/P-ict0/pdf-tools-app/releases).
+
+(More info at [INSTALL.md](./INSTALL.md))
 
 # ✨ Features
 
@@ -65,9 +68,13 @@ Right now, the app supports the following features:
 
 # 📦 Installation
 
-In the [**releases**](https://github.com/P-ict0/pdf-tools-app/releases) tab, you will find the executable for the app. Then you can run them directly.
+For OS-specific installation instructions, please refer to the [INSTALL.md](./INSTALL.md) file.
 
 You can also clone the repository and run the app locally.
+
+# 🗑️ Uninstall
+
+Refer to the [INSTALL.md](./INSTALL.md) file for OS-specific uninstallation instructions.
 
 # 💻 Development
 
@@ -107,4 +114,3 @@ Contributions are welcome! Feel free to open issues or submit pull requests to h
 [Badge Language]: https://img.shields.io/github/languages/top/P-ict0/pdf-tools-app
 [Badge License]: https://img.shields.io/github/license/P-ict0/pdf-tools-app
 [Badge Lines]: https://img.shields.io/tokei/lines/github/P-ict0/pdf-tools-app
-
