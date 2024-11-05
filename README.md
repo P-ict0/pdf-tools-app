@@ -19,7 +19,7 @@
 - [📖 Description](#-description)
 - [🚀 Quick Start](#-quick-start)
 - [✨ Features](#-features)
-- [🖼️ Screenshots](#️-screenshots)
+- [🖼️ Screenshots](#-screenshots)
   - [App](#app)
   - [Merger](#merger)
   - [Encryptor](#encryptor)
