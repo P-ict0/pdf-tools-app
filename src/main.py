@@ -5,7 +5,9 @@ from tkinter import messagebox
 from tkinter import ttk
 import requests
 
-from tools import merger, encryptor, compressor
+from tools.compressor import Compressor
+from tools.encryptor import Encryptor
+from tools.merger import Merger
 
 import styles
 from config import (
@@ -20,9 +22,6 @@ from config import (
 def check_for_updates(current_version: str) -> None:
     """
     Check for updates by comparing the current version with the latest version on GitHub.
-    If a new version is available, prompt the user to download it.
-
-    :param current_version: The current version of the application
     """
     try:
         response = requests.get(
@@ -42,10 +41,6 @@ def check_for_updates(current_version: str) -> None:
 def prompt_update(latest_version: str) -> None:
     """
     Prompt the user to download the latest version of the application.
-    If the user agrees, open the download URL in the default web browser and close the app.
-    If not, continue running the current version.
-
-    :param latest_version: The latest version available on GitHub
     """
     if messagebox.askyesno(
         "Update Available",
@@ -58,8 +53,6 @@ def prompt_update(latest_version: str) -> None:
 def main() -> None:
     """
     Main function to create the application window and run the main event loop.
-    Displays a list of available PDF tools dynamically and allows the user to select one.
-    When a tool is selected, the main window is hidden, and the tool's main function is called.
     """
     print(f"{APP_NAME} version {APP_VERSION}")
     check_for_updates(APP_VERSION)
@@ -82,22 +75,17 @@ def main() -> None:
     label = ttk.Label(frame, text="Select a PDF Tool:", font=styles.FONT_LARGE_BOLD)
     label.pack(pady=20)
 
-    # Available tools mapped to their modules
+    # Available tools mapped to their classes
     tools = {
-        "PDF Merger": merger,
-        "PDF Encryption": encryptor,
-        "PDF Compressor": compressor,
+        "PDF Merger": Merger,
+        "PDF Encryption": Encryptor,
+        "PDF Compressor": Compressor,
     }
 
     # Function to open selected tool
-    def open_tool(tool_module) -> None:
-        """
-        Open the selected tool by calling its main function.
-
-        :param tool_module: The module containing the tool's main function
-        """
+    def open_tool(tool_class) -> None:
         root.withdraw()
-        tool_module.main(root)
+        tool_class(root_window=root)
 
     # Function to dynamically create tool buttons
     def create_tool_buttons() -> None:
@@ -108,11 +96,11 @@ def main() -> None:
         row = 0
         col = 0
 
-        for tool_name, module in tools.items():
+        for tool_name, tool_class in tools.items():
             btn = ttk.Button(
                 tool_frame,
                 text=tool_name,
-                command=lambda m=module: open_tool(m),
+                command=lambda c=tool_class: open_tool(c),
                 width=20,
             )
             btn.grid(row=row, column=col, padx=10, pady=10)
@@ -154,9 +142,6 @@ def main() -> None:
 
     # Handle the close event
     def on_root_close() -> None:
-        """
-        Handle the close event by destroying the root window and exiting the application.
-        """
         root.destroy()
         sys.exit(0)
 
