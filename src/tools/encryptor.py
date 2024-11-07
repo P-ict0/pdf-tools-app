@@ -17,7 +17,7 @@ class Encryptor(ToolWindow):
         super().__init__(root_window)
 
     def build_gui(self):
-        self.title("PDF Encryptor")
+        self.title("PDF Encryptor/Decryptor")
         self.geometry("600x450")
         self.resizable(False, False)
         self.configure(bg=styles.BG_COLOR)
@@ -28,9 +28,8 @@ class Encryptor(ToolWindow):
 
         # Initialize Animation
         self.encrypt_btn_text = tk.StringVar(value="Encrypt PDF")
-        self.animation = Animation(
-            self, self.encrypt_btn_text, "Encrypting", interval=500
-        )
+        self.decrypt_btn_text = tk.StringVar(value="Decrypt PDF")
+        self.animation = None  # Will be initialized in encrypt/decrypt methods
 
         # GUI Layout
         frame = ttk.Frame(self, padding=10)
@@ -45,7 +44,7 @@ class Encryptor(ToolWindow):
         # Input File Selection
         input_btn = ttk.Button(
             frame,
-            text="Select PDF to Encrypt",
+            text="Select PDF File",
             command=self.select_input_file,
             style="TButton",
         )
@@ -90,7 +89,7 @@ class Encryptor(ToolWindow):
         # Warning Label
         warning_label = ttk.Label(
             frame,
-            text="⚠️ Warning: Encrypting large PDF files may take a significant amount of time.",
+            text="⚠️ Warning: Encrypting or decrypting large PDF files may take a significant amount of time.",
             foreground="red",
             wraplength=580,
             justify="center",
@@ -99,15 +98,27 @@ class Encryptor(ToolWindow):
         )
         warning_label.grid(row=4, column=0, columnspan=3, pady=(10, 0), sticky="w")
 
-        # Encrypt Button
+        # Encrypt and Decrypt Buttons
+        button_frame = ttk.Frame(frame)
+        button_frame.grid(row=5, column=0, columnspan=3, pady=20)
+
         self.encrypt_btn = ttk.Button(
-            frame,
+            button_frame,
             textvariable=self.encrypt_btn_text,
             command=self.encrypt,
-            width=25,
+            width=20,
             style="Large.TButton",
         )
-        self.encrypt_btn.grid(row=5, column=0, columnspan=3, pady=20)
+        self.encrypt_btn.grid(row=0, column=0, padx=5)
+
+        self.decrypt_btn = ttk.Button(
+            button_frame,
+            textvariable=self.decrypt_btn_text,
+            command=self.decrypt,
+            width=20,
+            style="Large.TButton",
+        )
+        self.decrypt_btn.grid(row=0, column=1, padx=5)
 
     def select_input_file(self) -> None:
         files = self.select_files(
@@ -140,20 +151,63 @@ class Encryptor(ToolWindow):
             messagebox.showerror("Error", "Please enter a password.")
             return
 
-        # Disable button and start loading animation
+        try:
+            reader = PdfReader(self.input_file)
+            if reader.is_encrypted:
+                messagebox.showerror("Error", "The selected PDF is already encrypted.")
+                return
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to read PDF file:\n{e}")
+            return
+
+        # Disable buttons and start loading animation
         self.encrypt_btn.config(state="disabled")
+        self.decrypt_btn.config(state="disabled")
+        self.animation = Animation(
+            self, self.encrypt_btn_text, "Encrypting", interval=500
+        )
         self.animation.start()
 
         # Perform encryption in a separate thread
         encrypt_thread = threading.Thread(target=self.perform_encryption)
         encrypt_thread.start()
 
-    def perform_encryption(self) -> None:
+    def decrypt(self) -> None:
+        if not self.input_file:
+            messagebox.showerror("Error", "Please select an input file.")
+            return
+
+        if not self.output_file:
+            messagebox.showerror("Error", "Please select an output file.")
+            return
+
+        if not self.password.get():
+            messagebox.showerror("Error", "Please enter a password.")
+            return
+
         try:
             reader = PdfReader(self.input_file)
-            if reader.is_encrypted:
-                raise Exception("The selected PDF is already encrypted.")
+            if not reader.is_encrypted:
+                messagebox.showerror("Error", "The selected PDF is not encrypted.")
+                return
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to read PDF file:\n{e}")
+            return
 
+        # Disable buttons and start loading animation
+        self.decrypt_btn.config(state="disabled")
+        self.encrypt_btn.config(state="disabled")
+        self.animation = Animation(
+            self, self.decrypt_btn_text, "Decrypting", interval=500
+        )
+        self.animation.start()
+
+        # Perform decryption in a separate thread
+        decrypt_thread = threading.Thread(target=self.perform_decryption)
+        decrypt_thread.start()
+
+    def perform_encryption(self) -> None:
+        try:
             self.encrypt_pdf(self.input_file, self.output_file, self.password.get())
             # Schedule the success callback in the main thread
             self.after(
@@ -162,7 +216,19 @@ class Encryptor(ToolWindow):
             )
         except Exception as e:
             # Schedule the failure callback in the main thread
-            self.after(0, lambda: self.encryption_failed(e))
+            self.after(0, lambda e=e: self.encryption_failed(e))
+
+    def perform_decryption(self) -> None:
+        try:
+            self.decrypt_pdf(self.input_file, self.output_file, self.password.get())
+            # Schedule the success callback in the main thread
+            self.after(
+                0,
+                lambda: self.decryption_completed(),
+            )
+        except Exception as e:
+            # Schedule the failure callback in the main thread
+            self.after(0, lambda e=e: self.decryption_failed(e))
 
     def encrypt_pdf(self, input_file: str, output_file: str, password: str) -> None:
         """
@@ -179,6 +245,29 @@ class Encryptor(ToolWindow):
         with open(output_file, "wb") as f:
             writer.write(f)
 
+    def decrypt_pdf(self, input_file: str, output_file: str, password: str) -> None:
+        """
+        Decrypt a PDF file with a password.
+        """
+        reader = PdfReader(input_file)
+        writer = PdfWriter()
+
+        if reader.is_encrypted:
+            try:
+                reader.decrypt(password)
+            except Exception:
+                raise Exception("Incorrect password or failed to decrypt the PDF.")
+        else:
+            raise Exception("The selected PDF is not encrypted.")
+
+        # Add all pages to the writer
+        for page in reader.pages:
+            writer.add_page(page)
+
+        # Save the new PDF to a file
+        with open(output_file, "wb") as f:
+            writer.write(f)
+
     def encryption_completed(self) -> None:
         messagebox.showinfo(
             "Success", f"PDF has been encrypted and saved as:\n{self.output_file}"
@@ -190,10 +279,31 @@ class Encryptor(ToolWindow):
             self.output_file,
         )
         self.encrypt_btn.config(state="normal")
+        self.decrypt_btn.config(state="normal")
 
     def encryption_failed(self, e: Exception) -> None:
         self.on_failed(e, "An error occurred during encryption:")
         self.animation.stop("Encrypt PDF")
+        self.encrypt_btn.config(state="normal")
+        self.decrypt_btn.config(state="normal")
+
+    def decryption_completed(self) -> None:
+        messagebox.showinfo(
+            "Success", f"PDF has been decrypted and saved as:\n{self.output_file}"
+        )
+        self.animation.stop("Decrypt PDF")
+        self.ask_to_open_or_close(
+            "Open Decrypted PDF",
+            "Do you want to open the decrypted PDF file?",
+            self.output_file,
+        )
+        self.decrypt_btn.config(state="normal")
+        self.encrypt_btn.config(state="normal")
+
+    def decryption_failed(self, e: Exception) -> None:
+        self.on_failed(e, "An error occurred during decryption:")
+        self.animation.stop("Decrypt PDF")
+        self.decrypt_btn.config(state="normal")
         self.encrypt_btn.config(state="normal")
 
     def toggle_password_visibility(self) -> None:

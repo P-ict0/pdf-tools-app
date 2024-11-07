@@ -78,7 +78,7 @@ def main() -> None:
     # Available tools mapped to their classes
     tools = {
         "PDF Merger": Merger,
-        "PDF Encryption": Encryptor,
+        "PDF Encrypt/Decrypt": Encryptor,
         "PDF Compressor": Compressor,
     }
 
