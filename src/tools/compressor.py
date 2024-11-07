@@ -6,6 +6,7 @@ from PyPDF2 import PdfReader, PdfWriter
 from typing import Optional
 
 import styles
+from helpers import pdf_is_encrypted
 from .tool_window import ToolWindow, Animation
 
 
@@ -106,6 +107,16 @@ class Compressor(ToolWindow):
             self.input_size_label.config(
                 text=f"Original Size: {self.original_size_mb:.2f} MB"
             )
+
+        # Check if file is encrypted
+        if pdf_is_encrypted(self.input_file):
+            tk.messagebox.showerror(
+                "Error", "The selected PDF file is encrypted. Please decrypt it first."
+            )
+            self.input_file = ""
+            self.input_label.config(text="No input file selected")
+            self.original_size_mb = 0.0
+            self.input_size_label.config(text="Original Size: N/A")
 
     def select_output(self) -> None:
         file = self.select_output_file(title="Select Output File")

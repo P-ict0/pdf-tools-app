@@ -5,6 +5,7 @@ from tkinter import ttk, messagebox
 from PyPDF2 import PdfReader, PdfWriter
 from typing import Optional
 
+from helpers import pdf_is_encrypted
 import styles
 from .tool_window import ToolWindow, Animation
 
@@ -151,13 +152,9 @@ class Encryptor(ToolWindow):
             messagebox.showerror("Error", "Please enter a password.")
             return
 
-        try:
-            reader = PdfReader(self.input_file)
-            if reader.is_encrypted:
-                messagebox.showerror("Error", "The selected PDF is already encrypted.")
-                return
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to read PDF file:\n{e}")
+        # Check if the PDF is already encrypted
+        if pdf_is_encrypted(self.input_file):
+            messagebox.showerror("Error", "The selected PDF is already encrypted.")
             return
 
         # Disable buttons and start loading animation
@@ -185,13 +182,9 @@ class Encryptor(ToolWindow):
             messagebox.showerror("Error", "Please enter a password.")
             return
 
-        try:
-            reader = PdfReader(self.input_file)
-            if not reader.is_encrypted:
-                messagebox.showerror("Error", "The selected PDF is not encrypted.")
-                return
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to read PDF file:\n{e}")
+        # Check if the PDF is encrypted
+        if not pdf_is_encrypted(self.input_file):
+            messagebox.showerror("Error", "The selected PDF is not encrypted.")
             return
 
         # Disable buttons and start loading animation
@@ -249,6 +242,7 @@ class Encryptor(ToolWindow):
         """
         Decrypt a PDF file with a password.
         """
+
         reader = PdfReader(input_file)
         writer = PdfWriter()
 

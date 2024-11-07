@@ -5,6 +5,7 @@ from tkinter import ttk
 from PyPDF2 import PdfMerger
 from typing import Optional
 
+from helpers import pdf_is_encrypted
 import styles
 from .tool_window import ToolWindow, Animation
 
@@ -150,6 +151,15 @@ class Merger(ToolWindow):
         if not self.selected_files:
             tk.messagebox.showerror("Error", "Please select files to merge.")
             return
+
+        # Check if any of the selected files are encrypted
+        for file_path in self.selected_files:
+            if pdf_is_encrypted(file_path):
+                tk.messagebox.showerror(
+                    "Error",
+                    f"File {os.path.basename(file_path)} is encrypted. Please decrypt it first.",
+                )
+                return
 
         # Disable button and start loading animation
         self.merge_btn.config(state="disabled")
