@@ -171,7 +171,7 @@ class Merger(ToolWindow):
             )
         except Exception as e:
             # Schedule the failure callback in the main thread
-            self.after(0, lambda: self.merge_failed(e))
+            self.after(0, lambda e=e: self.merge_failed(e))
 
     def merge_pdfs(self, file_paths: list[str], output_path: str) -> None:
         """

@@ -150,7 +150,7 @@ class Compressor(ToolWindow):
             )
         except Exception as e:
             # Schedule the failure callback in the main thread
-            self.after(0, lambda: self.compression_failed(e))
+            self.after(0, lambda e=e: self.compression_failed(e))
 
     def compress_pdf(self, input_file: str, output_file: str) -> None:
         """
