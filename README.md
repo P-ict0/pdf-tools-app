@@ -2,7 +2,7 @@
 
 # 🖨️ PDF Tools App 🖨️
 
-**A local, offline and more simple version of [iLovePDF](https://www.ilovepdf.com/)**
+**A local, offline and more simple imitation of [iLovePDF](https://www.ilovepdf.com/)**
 
 <p align="center">
   <img src="./media/app.png" alt="App Demo" width="50%">
