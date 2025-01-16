@@ -89,13 +89,13 @@ class Merger(ToolWindow):
 
         # Delete PDF button
         delete_btn = ttk.Button(
-            frame, text="Delete PDF", command=self.delete_selected_file, width=20
+            frame, text="Remove PDF", command=self.delete_selected_file, width=20
         )
         delete_btn.grid(row=4, column=2, padx=5, pady=(115, 5), sticky="n")
 
         # Delete All button
         delete_all_btn = ttk.Button(
-            frame, text="Delete All", command=self.delete_all_files, width=20
+            frame, text="Clear All", command=self.delete_all_files, width=20
         )
         delete_all_btn.grid(row=4, column=2, padx=5, pady=(170, 5), sticky="n")
 
@@ -251,7 +251,7 @@ class Merger(ToolWindow):
             tk.messagebox.showwarning("Warning", "No PDFs to delete.")
             return
         if tk.messagebox.askyesno(
-            "Delete All", "Are you sure you want to delete all selected PDFs?"
+            "Clear All", "Are you sure you want to clear all selected PDFs?"
         ):
             self.selected_files.clear()
             self.update_file_list()
