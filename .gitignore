@@ -21,6 +21,7 @@ Thumbs.db
 # Virtual environment
 venv/
 env/
+.venv/
 
 # Python package files
 *.egg-info/
