@@ -1,7 +1,7 @@
 import os
 import threading
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from PyPDF2 import PdfMerger
 from typing import Optional
 
@@ -15,6 +15,14 @@ class Merger(ToolWindow):
         self.selected_files: list[str] = []
         self.output_file = ""
         self.total_size_mb = 0.0
+
+        # For drag-and-drop
+        self.drag_data = {"index": None, "text": None}
+        # Whether we are in the middle of a drag
+        self.is_dragging = False
+        # Track the index of the item currently being dragged
+        self.dragging_index = None
+
         super().__init__(root_window)
 
     def build_gui(self):
@@ -74,6 +82,11 @@ class Merger(ToolWindow):
             row=4, column=0, columnspan=2, padx=5, pady=5, sticky="nsew"
         )
 
+        # Bindings for drag-and-drop
+        self.file_list.bind("<Button-1>", self.on_drag_start)
+        self.file_list.bind("<B1-Motion>", self.on_drag_motion)
+        self.file_list.bind("<ButtonRelease-1>", self.on_drag_stop)
+
         # Total size label
         self.total_size_label = ttk.Label(frame, text="Total size: 0.00 MB")
         self.total_size_label.grid(row=5, column=0, columnspan=2, sticky="w", pady=5)
@@ -113,6 +126,126 @@ class Merger(ToolWindow):
         # Initialize Animation
         self.animation = Animation(self, self.merge_btn_text, "Merging")
 
+    # ----------------------------
+    #     DRAG-AND-DROP LOGIC
+    # ----------------------------
+    def on_drag_start(self, event):
+        """
+        Called when the left mouse button is pressed inside the Listbox.
+        We store the item index and text, 'grey out' the item but do not remove it.
+        """
+        widget = event.widget
+        start_index = widget.nearest(event.y)
+        if start_index < 0 or start_index >= len(self.selected_files):
+            # No valid item was clicked
+            return
+
+        # Store drag data
+        self.drag_data["index"] = start_index
+        self.drag_data["text"] = widget.get(start_index)
+        self.is_dragging = True
+        self.dragging_index = start_index
+
+        # Highlight it in the Listbox
+        widget.selection_clear(0, tk.END)
+        widget.selection_set(start_index)
+
+        # Grey out the dragged item
+        try:
+            widget.itemconfig(start_index, {"fg": "gray"})
+        except tk.TclError:
+            # If itemconfig is not supported
+            pass
+
+    def on_drag_motion(self, event):
+        """
+        when the mouse is moved with the left button pressed.
+        We reorder the underlying list so that the item "follows" the mouse.
+        """
+        if not self.is_dragging:
+            return
+
+        widget = event.widget
+        old_index = self.drag_data["index"]
+        new_index = widget.nearest(event.y)
+        if new_index < 0:
+            new_index = 0
+        elif new_index >= len(self.selected_files):
+            new_index = len(self.selected_files) - 1
+
+        if new_index != old_index:
+            # Reorder in memory
+            file_to_move = self.selected_files[old_index]
+            # Remove from old position
+            del self.selected_files[old_index]
+            # Insert in new position
+            self.selected_files.insert(new_index, file_to_move)
+
+            # Update drag_data index and the dragging_index
+            self.drag_data["index"] = new_index
+            self.dragging_index = new_index
+
+            # Rebuild the entire list
+            self.update_file_list(force_no_clear=False)
+
+            # Re-select and grey out the newly moved item
+            widget.selection_clear(0, tk.END)
+            widget.selection_set(new_index)
+            try:
+                widget.itemconfig(new_index, {"fg": "gray"})
+            except tk.TclError:
+                pass
+
+    def on_drag_stop(self, event):
+        """
+        When the left mouse button is released.
+        We finalize the reorder by resetting any 'greyed out' color to normal.
+        """
+        if not self.is_dragging:
+            return
+
+        widget = event.widget
+
+        final_index = self.dragging_index
+        # Restore normal color
+        try:
+            widget.itemconfig(final_index, {"fg": styles.FG_COLOR})
+        except tk.TclError:
+            pass
+
+        # Clear drag data
+        self.drag_data = {"index": None, "text": None}
+        self.is_dragging = False
+        self.dragging_index = None
+
+        # Ensure final selection
+        widget.selection_clear(0, tk.END)
+        widget.selection_set(final_index)
+
+    def update_file_list(self, force_no_clear=False) -> None:
+        """
+        Re-populates the Listbox with the current self.selected_files
+        and updates total size. If force_no_clear is False, it empties
+        the listbox before inserting.
+        """
+        if not force_no_clear:
+            self.file_list.delete(0, tk.END)
+
+        total_size = 0
+        if force_no_clear:
+            self.file_list.delete(0, tk.END)
+
+        for idx, file in enumerate(self.selected_files):
+            size = os.path.getsize(file)
+            total_size += size
+            size_mb = size / (1024 * 1024)
+            self.file_list.insert(
+                tk.END, f"{os.path.basename(file)} ({size_mb:.2f} MB)"
+            )
+
+        self.total_size_mb = total_size / (1024 * 1024)
+        self.total_size_label.config(text=f"Total size: {self.total_size_mb:.2f} MB")
+
     def select_files_func(self) -> None:
         files = self.select_files(
             multiple=True,
@@ -124,19 +257,6 @@ class Merger(ToolWindow):
                 self.selected_files.append(file)
         self.update_file_list()
 
-    def update_file_list(self) -> None:
-        self.file_list.delete(0, tk.END)
-        total_size = 0
-        for idx, file in enumerate(self.selected_files):
-            size = os.path.getsize(file)
-            total_size += size
-            size_mb = size / (1024 * 1024)
-            self.file_list.insert(
-                tk.END, f"{idx + 1}. {os.path.basename(file)} ({size_mb:.2f} MB)"
-            )
-        self.total_size_mb = total_size / (1024 * 1024)
-        self.total_size_label.config(text=f"Total size: {self.total_size_mb:.2f} MB")
-
     def select_output(self) -> None:
         file = self.select_output_file(title="Select Output File")
         if file:
@@ -145,17 +265,17 @@ class Merger(ToolWindow):
 
     def merge(self) -> None:
         if not self.output_file:
-            tk.messagebox.showerror("Error", "Please select an output file.")
+            messagebox.showerror("Error", "Please select an output file.")
             return
 
         if not self.selected_files:
-            tk.messagebox.showerror("Error", "Please select files to merge.")
+            messagebox.showerror("Error", "Please select files to merge.")
             return
 
         # Check if any of the selected files are encrypted
         for file_path in self.selected_files:
             if pdf_is_encrypted(file_path):
-                tk.messagebox.showerror(
+                messagebox.showerror(
                     "Error",
                     f"File {os.path.basename(file_path)} is encrypted. Please decrypt it first.",
                 )
@@ -174,13 +294,8 @@ class Merger(ToolWindow):
             self.merge_pdfs(self.selected_files, self.output_file)
             merged_size = os.path.getsize(self.output_file)
             merged_size_mb = merged_size / (1024 * 1024)
-            # Schedule the success callback in the main thread
-            self.after(
-                0,
-                lambda: self.merge_completed(merged_size_mb),
-            )
+            self.after(0, lambda: self.merge_completed(merged_size_mb))
         except Exception as e:
-            # Schedule the failure callback in the main thread
             self.after(0, lambda e=e: self.merge_failed(e))
 
     def merge_pdfs(self, file_paths: list[str], output_path: str) -> None:
@@ -194,7 +309,7 @@ class Merger(ToolWindow):
         merger.close()
 
     def merge_completed(self, merged_size_mb: float) -> None:
-        tk.messagebox.showinfo(
+        messagebox.showinfo(
             "Success",
             f"PDFs have been merged into:\n{self.output_file}\nTotal size: {merged_size_mb:.2f} MB",
         )
@@ -240,7 +355,7 @@ class Merger(ToolWindow):
     def delete_selected_file(self) -> None:
         selected_index = self.file_list.curselection()
         if not selected_index:
-            tk.messagebox.showwarning("Warning", "No PDF selected to delete.")
+            messagebox.showwarning("Warning", "No PDF selected to delete.")
             return
         index = selected_index[0]
         self.selected_files.pop(index)
@@ -248,9 +363,9 @@ class Merger(ToolWindow):
 
     def delete_all_files(self) -> None:
         if not self.selected_files:
-            tk.messagebox.showwarning("Warning", "No PDFs to delete.")
+            messagebox.showwarning("Warning", "No PDFs to delete.")
             return
-        if tk.messagebox.askyesno(
+        if messagebox.askyesno(
             "Clear All", "Are you sure you want to clear all selected PDFs?"
         ):
             self.selected_files.clear()
