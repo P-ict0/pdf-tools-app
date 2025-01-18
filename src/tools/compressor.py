@@ -1,8 +1,8 @@
 import os
 import threading
 import tkinter as tk
-from tkinter import ttk
-from PyPDF2 import PdfReader, PdfWriter
+from tkinter import ttk, messagebox
+import fitz
 from typing import Optional
 
 import styles
@@ -109,8 +109,8 @@ class Compressor(ToolWindow):
             )
 
         # Check if file is encrypted
-        if pdf_is_encrypted(self.input_file):
-            tk.messagebox.showerror(
+        if self.input_file and pdf_is_encrypted(self.input_file):
+            messagebox.showerror(
                 "Error", "The selected PDF file is encrypted. Please decrypt it first."
             )
             self.input_file = ""
@@ -126,11 +126,11 @@ class Compressor(ToolWindow):
 
     def compress(self) -> None:
         if not self.input_file:
-            tk.messagebox.showerror("Error", "Please select an input file.")
+            messagebox.showerror("Error", "Please select an input file.")
             return
 
         if not self.output_file:
-            tk.messagebox.showerror("Error", "Please select an output file.")
+            messagebox.showerror("Error", "Please select an output file.")
             return
 
         # Disable button and start loading animation
@@ -144,45 +144,38 @@ class Compressor(ToolWindow):
     def perform_compression(self) -> None:
         try:
             self.compress_pdf(self.input_file, self.output_file)
-            compressed_size = os.path.getsize(self.output_file)
-            compressed_size_mb = compressed_size / (1024 * 1024)
-            compression_percentage = (
-                ((self.original_size_mb - compressed_size_mb) / self.original_size_mb)
-                * 100
-                if self.original_size_mb > 0
-                else 0
-            )
-            # Schedule the success callback in the main thread
+            compressed_size_mb = os.path.getsize(self.output_file) / (1024 * 1024)
+
+            # Calculate compression percentage
+            if self.original_size_mb > 0:
+                compression_pct = (
+                    (self.original_size_mb - compressed_size_mb) / self.original_size_mb
+                ) * 100
+            else:
+                compression_pct = 0
+
+            # Schedule success callback in main thread
             self.after(
                 0,
-                lambda: self.compression_completed(
-                    compressed_size_mb, compression_percentage
-                ),
+                lambda: self.compression_completed(compressed_size_mb, compression_pct),
             )
         except Exception as e:
-            # Schedule the failure callback in the main thread
+            # Schedule failure callback in main thread
             self.after(0, lambda e=e: self.compression_failed(e))
 
     def compress_pdf(self, input_file: str, output_file: str) -> None:
         """
-        Compress a PDF file by rewriting it with potentially optimized settings.
+        Compress a PDF file
         """
-        reader = PdfReader(input_file)
-        writer = PdfWriter()
-
-        for page in reader.pages:
-            page.compress_content_streams()
-            writer.add_page(page)
-
-        writer.add_metadata(reader.metadata)
-
-        with open(output_file, "wb") as fp:
-            writer.write(fp)
+        # Open the PDF
+        with fitz.open(input_file) as doc:
+            # Save the PDF with garbage collection and deflation
+            doc.save(output_file, garbage=4, deflate=True)
 
     def compression_completed(
         self, compressed_size_mb: float, compression_percentage: float
     ) -> None:
-        tk.messagebox.showinfo(
+        messagebox.showinfo(
             "Success",
             f"PDF has been compressed and saved to:\n{self.output_file}\n"
             f"Original Size: {self.original_size_mb:.2f} MB\n"
@@ -207,5 +200,6 @@ class Compressor(ToolWindow):
         self, new_size_mb: float, compression_percentage: float
     ) -> None:
         self.compression_info_label.config(
-            text=f"Compressed Size: {new_size_mb:.2f} MB ({compression_percentage:.2f}% reduction)"
+            text=f"Compressed Size: {new_size_mb:.2f} MB "
+            f"({compression_percentage:.2f}% reduction)"
         )

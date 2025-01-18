@@ -2,7 +2,7 @@ import os
 import threading
 import tkinter as tk
 from tkinter import ttk, messagebox
-from PyPDF2 import PdfMerger
+import fitz
 from typing import Optional
 
 from helpers import pdf_is_encrypted
@@ -130,10 +130,6 @@ class Merger(ToolWindow):
     #     DRAG-AND-DROP LOGIC
     # ----------------------------
     def on_drag_start(self, event):
-        """
-        Called when the left mouse button is pressed inside the Listbox.
-        We store the item index and text, 'grey out' the item but do not remove it.
-        """
         widget = event.widget
         start_index = widget.nearest(event.y)
         if start_index < 0 or start_index >= len(self.selected_files):
@@ -154,14 +150,9 @@ class Merger(ToolWindow):
         try:
             widget.itemconfig(start_index, {"fg": "gray"})
         except tk.TclError:
-            # If itemconfig is not supported
             pass
 
     def on_drag_motion(self, event):
-        """
-        when the mouse is moved with the left button pressed.
-        We reorder the underlying list so that the item "follows" the mouse.
-        """
         if not self.is_dragging:
             return
 
@@ -176,16 +167,12 @@ class Merger(ToolWindow):
         if new_index != old_index:
             # Reorder in memory
             file_to_move = self.selected_files[old_index]
-            # Remove from old position
             del self.selected_files[old_index]
-            # Insert in new position
             self.selected_files.insert(new_index, file_to_move)
 
-            # Update drag_data index and the dragging_index
             self.drag_data["index"] = new_index
             self.dragging_index = new_index
 
-            # Rebuild the entire list
             self.update_file_list(force_no_clear=False)
 
             # Re-select and grey out the newly moved item
@@ -197,16 +184,12 @@ class Merger(ToolWindow):
                 pass
 
     def on_drag_stop(self, event):
-        """
-        When the left mouse button is released.
-        We finalize the reorder by resetting any 'greyed out' color to normal.
-        """
         if not self.is_dragging:
             return
 
         widget = event.widget
-
         final_index = self.dragging_index
+
         # Restore normal color
         try:
             widget.itemconfig(final_index, {"fg": styles.FG_COLOR})
@@ -218,16 +201,10 @@ class Merger(ToolWindow):
         self.is_dragging = False
         self.dragging_index = None
 
-        # Ensure final selection
         widget.selection_clear(0, tk.END)
         widget.selection_set(final_index)
 
     def update_file_list(self, force_no_clear=False) -> None:
-        """
-        Re-populates the Listbox with the current self.selected_files
-        and updates total size. If force_no_clear is False, it empties
-        the listbox before inserting.
-        """
         if not force_no_clear:
             self.file_list.delete(0, tk.END)
 
@@ -277,7 +254,8 @@ class Merger(ToolWindow):
             if pdf_is_encrypted(file_path):
                 messagebox.showerror(
                     "Error",
-                    f"File {os.path.basename(file_path)} is encrypted. Please decrypt it first.",
+                    f"File {os.path.basename(file_path)} is encrypted. "
+                    f"Please decrypt it first.",
                 )
                 return
 
@@ -300,13 +278,16 @@ class Merger(ToolWindow):
 
     def merge_pdfs(self, file_paths: list[str], output_path: str) -> None:
         """
-        Merge multiple PDF files into a single PDF file.
+        Merge multiple PDF files into a single PDF file
         """
-        merger = PdfMerger()
-        for pdf in file_paths:
-            merger.append(pdf)
-        merger.write(output_path)
-        merger.close()
+        # Create a new empty PDF
+        with fitz.open() as merged_pdf:
+            for path in file_paths:
+                with fitz.open(path) as doc:
+                    # Insert entire PDF into merged_pdf
+                    merged_pdf.insert_pdf(doc)
+            # Save the merged result
+            merged_pdf.save(output_path)
 
     def merge_completed(self, merged_size_mb: float) -> None:
         messagebox.showinfo(
