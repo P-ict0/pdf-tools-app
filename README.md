@@ -33,7 +33,7 @@
 
 💻 **Windows, Linux and Mac compatible.** 💻
 
-The PDF Tools App is a simple, offline and local and cross-platform desktop application that allows you to manipulate PDF files. Built with `Tkinter` for GUI and `PyPDF2` for PDF processing, this app currently supports Windows, macOS, and Linux. So you don't have to upload your PDF files to the web.
+The PDF Tools App is a simple, offline and local and cross-platform desktop application that allows you to manipulate PDF files. Built with `Tkinter` for GUI and `PyMuPDF` for fast PDF processing, this app currently supports Windows, macOS, and Linux. So you don't have to upload your PDF files to the web.
 
 **Basically, an app that you can install locally on your system similar to [iLovePDF](https://www.ilovepdf.com/), but works offline and is much simpler.**
 
