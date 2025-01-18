@@ -216,9 +216,6 @@ class Encryptor(ToolWindow):
         except Exception as e:
             self.after(0, lambda e=e: self.decryption_failed(e))
 
-    #
-    #   REPLACE THESE METHODS WITH FITZ-BASED ENCRYPTION / DECRYPTION
-    #
     def encrypt_pdf(self, input_file: str, output_file: str, password: str) -> None:
         """
         Encrypt a PDF file with a user password using PyMuPDF (fitz).
