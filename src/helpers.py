@@ -1,6 +1,6 @@
 import sys
 import os
-from PyPDF2 import PdfReader
+import fitz
 
 
 # Version retrieval
@@ -25,12 +25,8 @@ def get_version() -> str:
 
 
 def pdf_is_encrypted(file_path: str) -> bool:
-    """
-    Check if a PDF file is encrypted.
-    """
-
     try:
-        reader = PdfReader(file_path)
-        return reader.is_encrypted
-    except Exception:
+        with fitz.open(file_path) as doc:
+            return doc.needs_pass
+    except:
         return False

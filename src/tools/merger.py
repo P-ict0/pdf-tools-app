@@ -278,7 +278,7 @@ class Merger(ToolWindow):
 
     def merge_pdfs(self, file_paths: list[str], output_path: str) -> None:
         """
-        Merge multiple PDF files into a single PDF file using PyMuPDF (fitz).
+        Merge multiple PDF files into a single PDF file
         """
         # Create a new empty PDF
         with fitz.open() as merged_pdf:

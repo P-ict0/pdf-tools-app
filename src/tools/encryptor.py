@@ -2,7 +2,7 @@ import os
 import threading
 import tkinter as tk
 from tkinter import ttk, messagebox
-from PyPDF2 import PdfReader, PdfWriter
+import fitz
 from typing import Optional
 
 from helpers import pdf_is_encrypted
@@ -90,7 +90,10 @@ class Encryptor(ToolWindow):
         # Warning Label
         warning_label = ttk.Label(
             frame,
-            text="⚠️ Warning: Encrypting or decrypting large PDF files may take a significant amount of time.",
+            text=(
+                "⚠️ Warning: Encrypting or decrypting large PDF files may "
+                "take a significant amount of time."
+            ),
             foreground="red",
             wraplength=580,
             justify="center",
@@ -202,66 +205,48 @@ class Encryptor(ToolWindow):
     def perform_encryption(self) -> None:
         try:
             self.encrypt_pdf(self.input_file, self.output_file, self.password.get())
-            # Schedule the success callback in the main thread
-            self.after(
-                0,
-                lambda: self.encryption_completed(),
-            )
+            self.after(0, self.encryption_completed)
         except Exception as e:
-            # Schedule the failure callback in the main thread
             self.after(0, lambda e=e: self.encryption_failed(e))
 
     def perform_decryption(self) -> None:
         try:
             self.decrypt_pdf(self.input_file, self.output_file, self.password.get())
-            # Schedule the success callback in the main thread
-            self.after(
-                0,
-                lambda: self.decryption_completed(),
-            )
+            self.after(0, self.decryption_completed)
         except Exception as e:
-            # Schedule the failure callback in the main thread
             self.after(0, lambda e=e: self.decryption_failed(e))
 
+    #
+    #   REPLACE THESE METHODS WITH FITZ-BASED ENCRYPTION / DECRYPTION
+    #
     def encrypt_pdf(self, input_file: str, output_file: str, password: str) -> None:
         """
-        Encrypt a PDF file with a password.
+        Encrypt a PDF file with a user password using PyMuPDF (fitz).
         """
-        reader = PdfReader(input_file)
-        writer = PdfWriter()
-
-        for page in reader.pages:
-            writer.add_page(page)
-
-        writer.encrypt(password)
-
-        with open(output_file, "wb") as f:
-            writer.write(f)
+        # Open the PDF normally (not encrypted)
+        with fitz.open(input_file) as doc:
+            doc.save(
+                output_file,
+                encryption=fitz.PDF_ENCRYPT_AES_256,
+                owner_pw=password,
+                user_pw=password,
+            )
 
     def decrypt_pdf(self, input_file: str, output_file: str, password: str) -> None:
         """
-        Decrypt a PDF file with a password.
+        Decrypt a PDF file with a password using PyMuPDF (fitz).
         """
+        # If the file is encrypted, you must open it with the correct password
+        with fitz.open(input_file, filetype="pdf") as doc:
+            # Authenticate with the password
+            if not doc.authenticate(password):
+                raise ValueError("Incorrect password provided for PDF decryption.")
+            # Save with no encryption
+            doc.save(output_file)
 
-        reader = PdfReader(input_file)
-        writer = PdfWriter()
-
-        if reader.is_encrypted:
-            try:
-                reader.decrypt(password)
-            except Exception:
-                raise Exception("Incorrect password or failed to decrypt the PDF.")
-        else:
-            raise Exception("The selected PDF is not encrypted.")
-
-        # Add all pages to the writer
-        for page in reader.pages:
-            writer.add_page(page)
-
-        # Save the new PDF to a file
-        with open(output_file, "wb") as f:
-            writer.write(f)
-
+    #
+    #   CALLBACKS
+    #
     def encryption_completed(self) -> None:
         messagebox.showinfo(
             "Success", f"PDF has been encrypted and saved as:\n{self.output_file}"
