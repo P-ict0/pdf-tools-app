@@ -5,10 +5,12 @@ from tkinter import messagebox
 from tkinter import ttk
 import requests
 
+# For your existing PDF tools
 from tools.compressor import Compressor
 from tools.encryptor import Encryptor
 from tools.merger import Merger
 
+# Import your custom styles and config
 import styles
 from config import (
     APP_NAME,
@@ -50,24 +52,89 @@ def prompt_update(latest_version: str) -> None:
         sys.exit(0)
 
 
-def main() -> None:
+def show_splash_screen(root: tk.Tk) -> tk.Toplevel:
     """
-    Main function to create the application window and run the main event loop.
+    Creates and displays a splash screen for at least 3 seconds.
+    Includes a circular rotating arc (loading animation) in the middle.
     """
-    print(f"{APP_NAME} version {APP_VERSION}")
-    check_for_updates(APP_VERSION)
+    splash = tk.Toplevel(root)
+    splash.overrideredirect(True)  # Remove window decorations
 
-    # Create the main window
-    root = tk.Tk()
+    splash.configure(bg=styles.BG_COLOR)
+
+    # Center the splash screen
+    splash.geometry("400x250+600+300")
+
+    # -- Title at the top --
+    title_label = ttk.Label(
+        splash,
+        text=APP_NAME,
+        font=styles.FONT_LARGE_BOLD,
+        background=styles.BG_COLOR,
+        foreground=styles.FG_COLOR,
+    )
+    title_label.pack(pady=(20, 10))
+
+    # -- Canvas for circular animation --
+    canvas_size = 100
+    canvas = tk.Canvas(
+        splash,
+        width=canvas_size,
+        height=canvas_size,
+        highlightthickness=0,
+        bg=styles.BG_COLOR,
+    )
+    canvas.pack()
+
+    # Create an arc on the canvas
+    arc = canvas.create_arc(
+        5,
+        5,
+        canvas_size - 5,
+        canvas_size - 5,
+        start=0,
+        extent=90,
+        style=tk.ARC,
+        outline=styles.HIGHLIGHT_COLOR,
+        width=4,
+    )
+
+    # Store the current angle
+    angle_dict = {"angle": 0}
+
+    def rotate_arc():
+        angle_dict["angle"] = (angle_dict["angle"] + 5) % 360
+        canvas.itemconfig(arc, start=angle_dict["angle"])
+        splash.after(30, rotate_arc)  # ~30 fps
+
+    rotate_arc()  # Start the animation
+
+    # "Loading..." label below the animation --
+    loading_label = ttk.Label(
+        splash,
+        text="Opening app...",
+        font=styles.FONT_DEFAULT,
+        background=styles.BG_COLOR,
+        foreground=styles.FG_COLOR,
+    )
+    loading_label.pack(pady=10)
+
+    return splash
+
+
+def create_main_window(root: tk.Tk) -> None:
+    """
+    Creates the main application UI inside the root window.
+    """
     root.title(APP_NAME)
     root.geometry("900x600")
     root.resizable(False, False)
 
-    # Set up styles
+    # Set up styles (your existing custom style logic)
     style = ttk.Style()
     styles.set_theme(style)
 
-    # Create a frame
+    # Main frame
     frame = ttk.Frame(root, padding=20)
     frame.pack(expand=True, fill=tk.BOTH)
 
@@ -84,10 +151,10 @@ def main() -> None:
 
     # Function to open selected tool
     def open_tool(tool_class) -> None:
-        root.withdraw()
+        root.withdraw()  # Hide main window
         tool_class(root_window=root)
 
-    # Function to dynamically create tool buttons
+    # Create tool buttons
     def create_tool_buttons() -> None:
         tool_frame = ttk.Frame(frame)
         tool_frame.pack(pady=10)
@@ -115,7 +182,6 @@ def main() -> None:
     bottom_frame = ttk.Frame(frame)
     bottom_frame.pack(side="bottom", fill=tk.X)
 
-    # Credits label
     def open_author_github(event: tk.Event) -> None:
         webbrowser.open(AUTHOR_GITHUB)
 
@@ -130,7 +196,6 @@ def main() -> None:
     credits_label.pack(side="left", padx=10, pady=10)
     credits_label.bind("<Button-1>", open_author_github)
 
-    # Version label
     version_label = ttk.Label(
         bottom_frame,
         text=f"Version {APP_VERSION}",
@@ -147,6 +212,29 @@ def main() -> None:
 
     root.protocol("WM_DELETE_WINDOW", on_root_close)
 
+
+def main() -> None:
+    """
+    Main function: shows splash screen for at least 3 seconds, then loads main window.
+    """
+    print(f"{APP_NAME} version {APP_VERSION}")
+
+    # Create the main application window (hidden at first)
+    root = tk.Tk()
+    root.withdraw()
+
+    # Show the splash screen
+    splash = show_splash_screen(root)
+
+    # Check for updates in the background
+    check_for_updates(APP_VERSION)
+
+    # After 3 seconds, destroy splash & show the main window
+    root.after(
+        3000, lambda: (splash.destroy(), root.deiconify(), create_main_window(root))
+    )
+
+    # Start the Tkinter event loop
     root.mainloop()
 
 
