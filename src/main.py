@@ -5,6 +5,7 @@ import webbrowser
 from tkinter import messagebox
 from tkinter import ttk
 import requests
+import time
 
 # For your existing PDF tools
 from tools.compressor import Compressor
@@ -94,10 +95,10 @@ def show_splash_screen(root: tk.Tk) -> tk.Toplevel:
         canvas_size - 5,
         canvas_size - 5,
         start=0,
-        extent=90,
+        extent=230,
         style=tk.ARC,
         outline=styles.HIGHLIGHT_COLOR,
-        width=4,
+        width=10,
     )
 
     # Store the current angle
@@ -214,16 +215,23 @@ def create_main_window(root: tk.Tk) -> None:
 def load_app(root: tk.Tk, splash: tk.Toplevel) -> None:
     """
     Loads the application in a background thread to prevent UI freezing.
-    The splash screen remains visible until all startup tasks are done.
+    The splash screen remains visible for at least some seconds, or longer if needed.
     """
+    wait_time = 2  # Minimum time to show the splash screen (seconds)
+    start_time = time.time()  # Record the start time of the splash
 
     def background_task():
         check_for_updates(
             APP_VERSION
         )  # Simulate checking for updates (could take time)
 
+        elapsed_time = time.time() - start_time  # Calculate time passed
+        remaining_time = max(
+            0, wait_time - elapsed_time
+        )  # Ensure at least some seconds display
+
         root.after(
-            0,
+            int(remaining_time * 1000),  # Convert seconds to milliseconds
             lambda: (
                 splash.destroy(),  # Close splash screen
                 root.deiconify(),  # Show main window
