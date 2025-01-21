@@ -1,4 +1,5 @@
 import sys
+import threading
 import tkinter as tk
 import webbrowser
 from tkinter import messagebox
@@ -54,8 +55,8 @@ def prompt_update(latest_version: str) -> None:
 
 def show_splash_screen(root: tk.Tk) -> tk.Toplevel:
     """
-    Creates and displays a splash screen for at least 3 seconds.
-    Includes a circular rotating arc (loading animation) in the middle.
+    Creates and displays a splash screen that remains visible until the main app finishes loading.
+    Includes a circular rotating arc in the middle.
     """
     splash = tk.Toplevel(root)
     splash.overrideredirect(True)  # Remove window decorations
@@ -130,7 +131,6 @@ def create_main_window(root: tk.Tk) -> None:
     root.geometry("900x600")
     root.resizable(False, False)
 
-    # Set up styles (your existing custom style logic)
     style = ttk.Style()
     styles.set_theme(style)
 
@@ -142,19 +142,17 @@ def create_main_window(root: tk.Tk) -> None:
     label = ttk.Label(frame, text="Select a PDF Tool:", font=styles.FONT_LARGE_BOLD)
     label.pack(pady=20)
 
-    # Available tools mapped to their classes
+    # Available tools
     tools = {
         "PDF Merger": Merger,
         "PDF Encrypt/Decrypt": Encryptor,
         "PDF Compressor": Compressor,
     }
 
-    # Function to open selected tool
     def open_tool(tool_class) -> None:
         root.withdraw()  # Hide main window
         tool_class(root_window=root)
 
-    # Create tool buttons
     def create_tool_buttons() -> None:
         tool_frame = ttk.Frame(frame)
         tool_frame.pack(pady=10)
@@ -213,9 +211,34 @@ def create_main_window(root: tk.Tk) -> None:
     root.protocol("WM_DELETE_WINDOW", on_root_close)
 
 
+def load_app(root: tk.Tk, splash: tk.Toplevel) -> None:
+    """
+    Loads the application in a background thread to prevent UI freezing.
+    The splash screen remains visible until all startup tasks are done.
+    """
+
+    def background_task():
+        check_for_updates(
+            APP_VERSION
+        )  # Simulate checking for updates (could take time)
+
+        root.after(
+            0,
+            lambda: (
+                splash.destroy(),  # Close splash screen
+                root.deiconify(),  # Show main window
+                create_main_window(root),  # Load main app UI
+            ),
+        )
+
+    # Run loading tasks in a separate thread
+    thread = threading.Thread(target=background_task)
+    thread.start()
+
+
 def main() -> None:
     """
-    Main function: shows splash screen for at least 3 seconds, then loads main window.
+    Main function: shows splash screen and ensures it stays until the app is ready.
     """
     print(f"{APP_NAME} version {APP_VERSION}")
 
@@ -226,13 +249,8 @@ def main() -> None:
     # Show the splash screen
     splash = show_splash_screen(root)
 
-    # Check for updates in the background
-    check_for_updates(APP_VERSION)
-
-    # After 3 seconds, destroy splash & show the main window
-    root.after(
-        3000, lambda: (splash.destroy(), root.deiconify(), create_main_window(root))
-    )
+    # Start app loading (keeps splash until fully loaded)
+    load_app(root, splash)
 
     # Start the Tkinter event loop
     root.mainloop()
