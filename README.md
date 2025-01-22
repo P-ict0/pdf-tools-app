@@ -1,3 +1,6 @@
+**DISCLAIMER**: Sometimes Windows defender doesn't let you download the app and the executable get's falsely flagged as malware. I'm working to get this fixed.
+As a temporary fix, you can temporarily disable real-time-protection before installing. After the installation it should work fine.
+
 <div align = center>
 
 # 🖨️ PDF Tools App 🖨️
