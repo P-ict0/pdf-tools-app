@@ -29,7 +29,8 @@ As a temporary fix, you can temporarily disable real-time-protection before inst
 - [🖼️ Screenshots](#%EF%B8%8F-screenshots)
 - [📦 Installation](#-installation)
 - [🗑️ Uninstall](#%EF%B8%8F-uninstall)
-- [💻 Development](#-development)
+- [💻 Development / Run without installing](#-development--run-without-installing)
+- [🏗️ Build from source](#%EF%B8%8F-build-from-source)
 - [👥 Contributing](#-contributing)
 
 # 📖 Description
