@@ -68,12 +68,12 @@ You can also clone the repository and run the app locally.
 
 Refer to the [INSTALL.md](./INSTALL.md) file for OS-specific uninstallation instructions.
 
-# 💻 Development
+# 💻 Development / Run without installing
 
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/your-username/pdf-tools-app.git
+   git clone https://github.com/P-ict0/pdf-tools-app.git
    cd pdf-tools-app
    ```
 
@@ -85,8 +85,63 @@ Refer to the [INSTALL.md](./INSTALL.md) file for OS-specific uninstallation inst
 
 3. **Run**:
    ```bash
-   python src/app.py
+   python src/main.py
    ```
+
+# 🏗️ Build from source
+
+To build from source:
+
+1. Basic requirements and PyInstaller
+```bash
+git clone https://github.com/P-ict0/pdf-tools-app.git; cd pdf-tools-app
+
+# Create venv and activate
+python3 -m venv .venv
+source ./.venv/bin/activate  # Windows: .\.venv\Scripts\Activate.ps1
+
+# Requirements
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install pyinstaller
+
+# Create executable (You might want to change --icon path: Windows/Linux uses `.ico` and MacOS uses `.icns`)
+pyinstaller --windowed --onedir --name pdf_tools --icon ./media/icons/pdf.ico --add-data "VERSION:." ./src/main.py
+```
+
+2. OS-specific (Now follow instructions for your OS)
+
+**(WINDOWS ONLY) Create app installer:**
+```PowerShell
+# Might need Admin terminal for this
+choco install innosetup --no-progress -y
+
+# Compile
+$VERSION = $(type .\VERSION)
+iscc installers/windows_setup.iss /DMyAppVersion=$VERSION
+
+# This will create a pdf_tools_setup.exe file to install the app
+```
+
+**(MacOS ONLY): Create app**
+```shell
+brew install create-dmg
+mkdir -p dist/AppBundle
+cp -R "dist/pdf_tools.app" dist/AppBundle/
+create-dmg \
+  --volname "PDF Tools Installer" \
+  --volicon "./media/icons/pdf.icns" \
+  --window-pos 200 120 \
+  --window-size 800 400 \
+  --icon-size 100 \
+  --app-drop-link 600 185 \
+  --icon "pdf_tools.app.app" 200 190 \
+  "dist/pdf_tools_macos.dmg" \
+  dist/AppBundle
+
+# This will create a `dist/pdf_tools_macos.dmg` that you can then use to install
+```
+
 
 # 👥 Contributing
 
