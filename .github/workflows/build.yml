@@ -20,18 +20,18 @@ jobs:
           - os: windows-latest
             python-version: "3.12"
             icon: "./media/icons/pdf.ico"
-            output-name: pdf_tools_windows.exe
-            pyinstaller-options: "--onefile --windowed"
+            pyinstaller-options: "--windowed --onedir"
+            output-name: pdf_tools_windows
           - os: macos-latest
             python-version: "3.12"
             icon: "./media/icons/pdf.icns"
             output-name: pdf_tools_macos
-            pyinstaller-options: "--windowed"
+            pyinstaller-options: "--onefile --windowed"
           - os: ubuntu-latest
             python-version: "3.12"
             icon: "./media/icons/pdf.ico"
-            output-name: pdf_tools_linux
             pyinstaller-options: "--onefile --windowed"
+            output-name: pdf_tools_linux
     steps:
       - uses: actions/checkout@v3
 
@@ -54,7 +54,11 @@ jobs:
 
       - name: Build Executable
         run: |
-          pyinstaller ${{ matrix.pyinstaller-options }} --name "${{ matrix.output-name }}" --icon "${{ matrix.icon }}" --add-data "VERSION:." ./src/main.py
+          pyinstaller ${{ matrix.pyinstaller-options }} \
+            --name "${{ matrix.output-name }}" \
+            --icon "${{ matrix.icon }}" \
+            --add-data "VERSION:." \
+            ./src/main.py
 
       - name: List Directory (Debugging)
         shell: bash
@@ -68,7 +72,7 @@ jobs:
       - name: Create Windows Installer
         if: matrix.os == 'windows-latest'
         run: |
-          iscc installers/windows_setup.iss /DMyAppVersion=${{ env.VERSION }} /DMyAppExeName=${{ matrix.output-name }}
+          iscc installers/windows_setup.iss /DMyAppVersion=${{ env.VERSION }}
 
       # macOS-specific steps
       - name: Install create-dmg

@@ -5,7 +5,6 @@
 #endif
 #define MyAppPublisher "P-ict0"
 #define MyAppURL "https://github.com/P-ict0/pdf-tools-app"
-#define MyAppExeName "pdf_tools_windows.exe"
 
 [Setup]
 AppId={{98AAE78F-AF6E-44B1-99A1-3C5180C9867A}}
@@ -28,14 +27,15 @@ WizardStyle=modern
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "..\dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\dist\pdf_tools_windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Include the VERSION file
 Source: "..\VERSION"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
+[Icons]
+Name: "{group}\{#MyAppName}"; Filename: "{app}\pdf_tools_windows.exe"
 Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\pdf_tools_windows.exe"; Tasks: desktopicon
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a &desktop icon"; GroupDescription: "Additional icons:"; Flags: unchecked
