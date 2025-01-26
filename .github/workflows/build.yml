@@ -54,11 +54,7 @@ jobs:
 
       - name: Build Executable
         run: |
-          pyinstaller ${{ matrix.pyinstaller-options }} \
-            --name "${{ matrix.output-name }}" \
-            --icon "${{ matrix.icon }}" \
-            --add-data "VERSION:." \
-            ./src/main.py
+          pyinstaller ${{ matrix.pyinstaller-options }} --name ${{ matrix.output-name }} --icon ${{ matrix.icon }} --add-data "VERSION:." ./src/main.py
 
       - name: List Directory (Debugging)
         shell: bash
